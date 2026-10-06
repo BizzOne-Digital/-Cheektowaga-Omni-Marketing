@@ -46,6 +46,12 @@ export const offer = {
   claimUrl: process.env.NEXT_PUBLIC_OFFER_URL || null,
 }
 
+// Countries the store ships to (ISO codes, as Stripe requires). Add more as needed.
+export const shipCountries: [code: string, label: string][] = [
+  ['US', 'United States'],
+  ['CA', 'Canada'],
+]
+
 export const legal = {
   privacy: 'Privacy Policy',
   terms: 'Terms',

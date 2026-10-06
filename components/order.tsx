@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { getProduct, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
-import { offer, site } from '@/lib/site'
+import { offer, shipCountries, site } from '@/lib/site'
 import { WatchRender } from './watch-render'
 import { Field } from './field'
 
@@ -12,7 +12,8 @@ type Status = { state: 'idle' | 'sending' | 'sent' | 'offline' | 'error'; messag
 const OrderCtx = createContext<(m: Mode) => void>(() => {})
 export const useOrder = () => useContext(OrderCtx)
 
-export function OrderProvider({ children }: { children: React.ReactNode }) {
+// shippingAtCheckout: a Stripe shipping rate is configured server-side and is added on Stripe's page.
+export function OrderProvider({ children, shippingAtCheckout = false }: { children: React.ReactNode; shippingAtCheckout?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [mode, setMode] = useState<Mode | null>(null)
 
@@ -45,7 +46,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
         onClose={() => setTimeout(() => setMode(null), 700)}
       >
-        {mode && <OrderPanel key={mode.kind === 'buy' ? mode.productId : 'offer'} mode={mode} close={() => dialog.current?.close()} />}
+        {mode && <OrderPanel key={mode.kind === 'buy' ? mode.productId : 'offer'} mode={mode} shippingAtCheckout={shippingAtCheckout} close={() => dialog.current?.close()} />}
       </dialog>
     </OrderCtx.Provider>
   )
@@ -78,13 +79,20 @@ export function ProductVisual({ product, className = '' }: { product: Product; c
   )
 }
 
-function OrderPanel({ mode, close }: { mode: Mode; close: () => void }) {
+function OrderPanel({ mode, close, shippingAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean }) {
   const isOffer = mode.kind === 'offer'
   const product = isOffer ? products[0] : getProduct(mode.productId)!
   const [qty, setQty] = useState(1)
   const [status, setStatus] = useState<Status>({ state: 'idle' })
   const [lastOrder, setLastOrder] = useState<Record<string, string>>({})
   const subtotal = product.priceCents * qty
+
+  // Coming back from Stripe with the browser's Back button restores this page from cache; re-enable the form.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => e.persisted && setStatus({ state: 'idle' })
+    addEventListener('pageshow', onShow)
+    return () => removeEventListener('pageshow', onShow)
+  }, [])
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -210,7 +218,12 @@ function OrderPanel({ mode, close }: { mode: Mode; close: () => void }) {
             <div className="grid gap-6 sm:grid-cols-3">
               <Field id="f-city" name="city" label="City" autoComplete="address-level2" />
               <Field id="f-postal" name="postal" label="Postal / ZIP" autoComplete="postal-code" />
-              <Field id="f-country" name="country" label="Country" autoComplete="country-name" defaultValue="United States" />
+              <div className="field">
+                <label htmlFor="f-country">Country <span className="text-ember" aria-hidden="true">*</span></label>
+                <select id="f-country" name="country" required autoComplete="country" defaultValue={shipCountries[0][0]}>
+                  {shipCountries.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+                </select>
+              </div>
             </div>
           </fieldset>
 
@@ -238,8 +251,8 @@ function OrderPanel({ mode, close }: { mode: Mode; close: () => void }) {
             ) : (
               <dl className="grid gap-3 text-sm">
                 <Row term={`${product.name} × ${qty}`} value={money(subtotal)} />
-                <Row term="Shipping & handling" value="To be confirmed" />
-                <Row term="Order total" value={`${money(subtotal)} + shipping`} strong />
+                <Row term="Shipping & handling" value={shippingAtCheckout ? 'Added at secure checkout' : 'To be confirmed'} />
+                <Row term={shippingAtCheckout ? 'Subtotal' : 'Order total'} value={shippingAtCheckout ? money(subtotal) : `${money(subtotal)} + shipping`} strong />
               </dl>
             )}
 

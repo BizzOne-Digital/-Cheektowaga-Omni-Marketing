@@ -7,6 +7,7 @@ import { Loader } from '@/components/loader'
 import { Motion } from '@/components/motion'
 import { Nav } from '@/components/nav'
 import { OrderProvider } from '@/components/order'
+import { shippingAtCheckout } from '@/lib/payments'
 import { site } from '@/lib/site'
 import './globals.css'
 
@@ -49,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Loader />
         <BgStage />
-        <OrderProvider>
+        <OrderProvider shippingAtCheckout={shippingAtCheckout}>
           <Nav />
           <main id="main">{children}</main>
           <Footer />

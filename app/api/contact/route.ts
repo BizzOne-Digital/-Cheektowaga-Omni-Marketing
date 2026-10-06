@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { notify } from '@/lib/notify'
 
 // Forwards enquiries (contact form + offer claims) to CONTACT_WEBHOOK_URL
 // (e.g. Formspree, Zapier, Make). Without it the form reports it is not connected.
@@ -14,14 +15,8 @@ export async function POST(req: Request) {
   if (!clean.name || !clean.message || !EMAIL.test(clean.email ?? ''))
     return NextResponse.json({ error: 'Please complete name, a valid email and message.' }, { status: 400 })
 
-  const hook = process.env.CONTACT_WEBHOOK_URL
-  if (!hook) return NextResponse.json({ error: 'not_configured' }, { status: 503 })
-
-  const res = await fetch(hook, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', accept: 'application/json' },
-    body: JSON.stringify({ ...clean, submittedAt: new Date().toISOString() }),
-  }).catch(() => null)
-  if (!res?.ok) return NextResponse.json({ error: 'Message could not be delivered. Please email us directly.' }, { status: 502 })
+  const result = await notify(clean)
+  if (result === 'not_configured') return NextResponse.json({ error: 'not_configured' }, { status: 503 })
+  if (result === 'failed') return NextResponse.json({ error: 'Message could not be delivered. Please email us directly.' }, { status: 502 })
   return NextResponse.json({ ok: true })
 }

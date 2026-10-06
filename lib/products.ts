@@ -14,7 +14,7 @@ export type Product = {
 }
 
 // Flip to true once prices are negotiated; while false the UI flags pricing as provisional.
-export const PRICING_CONFIRMED = false
+export const PRICING_CONFIRMED = true
 
 export const products: Product[] = [
   {
