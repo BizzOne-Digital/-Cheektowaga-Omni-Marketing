@@ -9,12 +9,13 @@ corepack pnpm dev
 
 Use pnpm (the project's lockfile). Add packages with `corepack pnpm add <pkg>` so Vercel's frozen install stays in sync.
 
-## Before launch — replace placeholders
+## Product & media
 
 | What | Where |
 |------|-------|
-| Hero video | Drop the file at `public/media/hero-video.mp4` (path set in `lib/site.ts` → `heroVideo`). Until then the poster shows. |
-| Product names, prices, photos | `lib/products.ts`. Add `image: '/path.jpg'` per product to replace the SVG render. Set `PRICING_CONFIRMED = true` once prices are final (removes "provisional" labels and adds price to Product schema). |
+| Product (L16 Pro 4G, $49), features, specs, health/SIM note | `lib/products.ts`. Specs follow the Toptraking L16PRO 4G listing. Add objects to `products` to sell more models. |
+| Hero video | `public/media/hero.mp4` (Made-in-China supplier video, re-encoded 1600px, no audio). Also loops behind the "Time moves" section. Path in `lib/site.ts`. |
+| Product images | `public/media/l16/photo-1..7.jpg` (Toptraking gallery, white background, shown on white panels). Order and alt text set in `lib/products.ts`. |
 | Policies | `app/legal/[slug]/page.tsx` (Privacy, Terms, Shipping, Returns). |
 | Shipping cost | Create a Shipping Rate in Stripe and set `STRIPE_SHIPPING_RATE_ID`. Until then the order panel shows "To be confirmed". |
 | Ship-to countries | `shipCountries` in `lib/site.ts` (currently US, Canada). |

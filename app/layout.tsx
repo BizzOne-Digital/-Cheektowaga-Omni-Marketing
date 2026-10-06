@@ -8,6 +8,7 @@ import { Motion } from '@/components/motion'
 import { Nav } from '@/components/nav'
 import { OrderProvider } from '@/components/order'
 import { shippingAtCheckout } from '@/lib/payments'
+import { products } from '@/lib/products'
 import { site } from '@/lib/site'
 import './globals.css'
 
@@ -19,8 +20,8 @@ export const metadata: Metadata = {
   title: { default: site.title, template: `%s | ${site.name}` },
   description: site.description,
   alternates: { canonical: '/' },
-  openGraph: { type: 'website', siteName: site.name, title: site.title, description: site.description, url: '/', images: [{ url: site.heroPoster, alt: 'Smart watch with a glowing orange face on a dark plinth' }] },
-  twitter: { card: 'summary_large_image', title: site.title, description: site.description, images: [site.heroPoster] },
+  openGraph: { type: 'website', siteName: site.name, title: site.title, description: site.description, url: '/', images: [{ url: products[0].images[0].src, alt: products[0].images[0].alt }] },
+  twitter: { card: 'summary_large_image', title: site.title, description: site.description, images: [products[0].images[0].src] },
   robots: { index: true, follow: true },
 }
 

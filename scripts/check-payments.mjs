@@ -14,18 +14,18 @@ const post = async (path, body, headers = {}) => {
 
 let r = await post('/api/checkout', { productId: 'nope', quantity: 1, customer })
 assert.equal(r.status, 400, 'unknown product rejected')
-r = await post('/api/checkout', { productId: 'smart-watch-one', quantity: 11, customer })
+r = await post('/api/checkout', { productId: 'l16-pro', quantity: 11, customer })
 assert.equal(r.status, 400, 'quantity cap')
-r = await post('/api/checkout', { productId: 'smart-watch-one', quantity: 1, customer: { ...customer, country: 'United States' } })
+r = await post('/api/checkout', { productId: 'l16-pro', quantity: 1, customer: { ...customer, country: 'United States' } })
 assert.equal(r.status, 400, 'country must be an ISO code we ship to')
-r = await post('/api/checkout', { productId: 'smart-watch-one', quantity: 1, customer, priceCents: 1 })
+r = await post('/api/checkout', { productId: 'l16-pro', quantity: 1, customer, priceCents: 1 })
 assert.equal(r.status, 503, 'live key + unconfirmed prices is blocked (and client price is ignored)')
 assert.equal(r.json.error, 'not_configured')
 
 const session = {
   id: 'cs_test_123', object: 'checkout.session', payment_status: 'paid', amount_total: 4900, currency: 'usd',
   customer_details: { email: 'test@example.com' },
-  metadata: { product_id: 'smart-watch-one', quantity: '1', customer_name: 'Test Buyer', customer_phone: '555 0100', ship_line1: '1 Test St', ship_city: 'Buffalo', ship_postal: '14225', ship_country: 'US' },
+  metadata: { product_id: 'l16-pro', quantity: '1', customer_name: 'Test Buyer', customer_phone: '555 0100', ship_line1: '1 Test St', ship_city: 'Buffalo', ship_postal: '14225', ship_country: 'US' },
 }
 const payload = JSON.stringify({ id: 'evt_test', object: 'event', type: 'checkout.session.completed', data: { object: session } })
 const signature = new Stripe('sk_test_unused').webhooks.generateTestHeaderString({ payload, secret })

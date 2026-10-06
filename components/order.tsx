@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { getProduct, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
 import { offer, shipCountries, site } from '@/lib/site'
-import { WatchRender } from './watch-render'
 import { Field } from './field'
 
 type Mode = { kind: 'buy'; productId: string } | { kind: 'offer' }
@@ -70,13 +69,10 @@ export function ClaimButton({ className = 'btn', children = 'Claim Offer' }: { c
   )
 }
 
+// Product photos have white backgrounds; place them on a white (.product-stage.light) panel.
 export function ProductVisual({ product, className = '' }: { product: Product; className?: string }) {
-  const label = `${product.name} in ${product.finish} — placeholder image`
-  return product.image ? (
-    <img src={product.image} alt={label} className={`object-cover ${className}`} loading="lazy" />
-  ) : (
-    <WatchRender colorway={product.colorway} label={label} className={className} />
-  )
+  const img = product.images[0]
+  return <img src={img.src} alt={img.alt} className={`object-contain ${className}`} loading="lazy" />
 }
 
 function OrderPanel({ mode, close, shippingAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean }) {
@@ -145,8 +141,8 @@ function OrderPanel({ mode, close, shippingAtCheckout }: { mode: Mode; close: ()
       </div>
 
       <div className="grid grid-cols-[7rem_1fr] items-center gap-6 border-b border-line px-6 py-8 sm:grid-cols-[9rem_1fr] sm:px-10">
-        <div className="product-stage aspect-[3/4] overflow-hidden">
-          <ProductVisual product={product} className="render size-full" />
+        <div className="product-stage light aspect-[3/4] overflow-hidden">
+          <ProductVisual product={product} className="render size-full p-2" />
         </div>
         <div>
           <h2 id="order-title" className="display text-4xl sm:text-5xl">

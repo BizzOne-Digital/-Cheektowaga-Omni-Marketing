@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import { money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
+import { features, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
 import { offer, site } from '@/lib/site'
-import { HeroVideo, UsTime } from './hero'
+import { HeroVideo, LoopVideo, UsTime } from './hero'
 import { BuyButton, ClaimButton, ProductVisual } from './order'
-import { WatchRender } from './watch-render'
 
 const Arrow = () => <span className="btn-arrow" aria-hidden="true">→</span>
 
@@ -43,23 +42,7 @@ export function Hero() {
             <p className="mt-8 max-w-md text-lg leading-relaxed text-bone/80" data-reveal data-delay="0.35">{site.tagline}</p>
             <div className="mt-10 flex flex-wrap gap-3" data-reveal data-delay="0.5">
               <Link href="/watches" className="btn" data-magnetic>Shop Watches <Arrow /></Link>
-              <a href="#collection" className="btn btn-ghost" data-magnetic>Explore Collection</a>
-            </div>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-[26rem] lg:col-span-5 lg:max-w-none" data-reveal="scale" data-delay="0.2">
-            <div className="relative aspect-[3/4] lg:aspect-auto lg:h-[76svh]">
-              <svg viewBox="0 0 200 200" className="absolute left-1/2 top-[40%] w-[118%] -translate-x-1/2 -translate-y-1/2 opacity-80" aria-hidden="true">
-                <circle cx="100" cy="100" r="96" fill="none" stroke="#E06D34" strokeOpacity="0.5" strokeWidth="0.4" />
-                <circle cx="100" cy="100" r="88" fill="none" stroke="#F5F2ED" strokeOpacity="0.15" strokeWidth="0.3" strokeDasharray="0.6 2.4" className="origin-center animate-[spin_90s_linear_infinite]" />
-              </svg>
-              <div className="absolute inset-0 overflow-hidden [mask-image:radial-gradient(58%_52%_at_50%_44%,#000_45%,transparent_92%)]" data-speed="-0.12">
-                <img src={site.heroPoster} alt="Smart Watch One with a glowing orange face, floating above a dark plinth" className="size-full scale-110 object-cover object-[50%_40%]" fetchPriority="high" />
-              </div>
-              <div className="absolute bottom-[12%] left-0 hidden border-l border-ember bg-ink/60 px-4 py-3 backdrop-blur-md sm:block lg:-left-10">
-                <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-ash">Featured</p>
-                <p className="mt-1 text-sm font-semibold">{products[0].name} · {products[0].finish}</p>
-              </div>
+              <a href="#collection" className="btn btn-ghost" data-magnetic>Explore Features</a>
             </div>
           </div>
         </div>
@@ -106,9 +89,8 @@ export function Intro() {
     <section className="wrap grid gap-14 py-32 lg:grid-cols-12 lg:py-44" aria-labelledby="intro-title">
       <div className="lg:col-span-4">
         <p className="eyebrow" data-reveal="fade">The story</p>
-        <div className="product-stage relative mt-10 aspect-[4/5] max-w-sm" data-reveal="mask" style={{ '--stage-glow': 'rgb(242 154 104 / 0.22)' } as React.CSSProperties}>
-          <WatchRender colorway={products[1].colorway} label={`${products[1].name} — placeholder render`} className="render absolute inset-0 m-auto h-[80%] w-auto -rotate-6" />
-          <span className="floor" aria-hidden="true" />
+        <div className="product-stage light relative mt-10 aspect-[4/5] max-w-sm" data-reveal="mask">
+          <img src={products[0].images[2].src} alt={products[0].images[2].alt} className="render absolute inset-0 size-full object-contain p-[8%]" loading="lazy" />
         </div>
       </div>
       <div className="lg:col-span-8 lg:pt-16">
@@ -126,32 +108,51 @@ export function Intro() {
   )
 }
 
+/* ---------------- Product in ring (moved from the hero) ---------------- */
+export function ProductRing({ product = products[0] }: { product?: Product }) {
+  const img = product.images[0]
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[42rem]" data-reveal="scale">
+      <div className="absolute inset-[2%] bg-[radial-gradient(closest-side,rgb(224_109_52/0.28),transparent)]" aria-hidden="true" />
+      <svg viewBox="0 0 200 200" className="absolute inset-0 size-full opacity-80" aria-hidden="true">
+        <circle cx="100" cy="100" r="96" fill="none" stroke="#E06D34" strokeOpacity="0.5" strokeWidth="0.4" />
+        <circle cx="100" cy="100" r="88" fill="none" stroke="#F5F2ED" strokeOpacity="0.15" strokeWidth="0.3" strokeDasharray="0.6 2.4" className="origin-center animate-[spin_90s_linear_infinite]" />
+      </svg>
+      <div className="absolute inset-[13%] overflow-hidden rounded-full bg-white shadow-[0_40px_80px_rgb(0_0_0/0.55)]" data-speed="-0.08">
+        <img src={img.src} alt={img.alt} className="size-full object-contain p-[9%] transition-transform duration-1000 ease-[var(--ease-expo)] group-hover:scale-105" loading="lazy" />
+      </div>
+      <div className="absolute bottom-[10%] left-0 border-l border-ember bg-ink/60 px-4 py-3 backdrop-blur-md lg:-left-6">
+        <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-ash">Featured</p>
+        <p className="mt-1 text-sm font-semibold">{product.name} · {money(product.priceCents)}</p>
+      </div>
+    </div>
+  )
+}
+
 /* ---------------- Featured product ---------------- */
 export function Featured({ product = products[0] }: { product?: Product }) {
   return (
     <section className="relative py-24 lg:py-32" aria-labelledby="featured-title">
       <div className="wrap grid items-center gap-12 lg:grid-cols-12">
         <div className="group relative lg:col-span-7" data-cursor="Buy">
-          <div className="product-stage aspect-[4/5] lg:aspect-[5/6]" data-reveal="mask">
-            {product.image ? <img src={product.image} alt={`${product.name} watch face, close up`} className="render size-full scale-[1.55] object-cover object-[58%_40%]" loading="lazy" /> : <ProductVisual product={product} className="render size-full" />}
-          </div>
+          <ProductRing product={product} />
         </div>
         <div className="lg:col-span-5 lg:pl-8">
           <p aria-hidden="true" className="mega mb-6 text-[clamp(4rem,8vw,8rem)] text-transparent [-webkit-text-stroke:1.5px_#E06D34]" data-reveal="fade">01</p>
-          <p className="eyebrow" data-reveal="fade">Featured watch</p>
+          <p className="eyebrow" data-reveal="fade">The watch · {product.model}</p>
           <h2 id="featured-title" data-split className="mega mt-8 text-[clamp(3rem,6vw,6.2rem)]">{product.name}</h2>
           <p className="display mt-4 text-3xl italic text-ember-soft" data-reveal>{product.line}</p>
           <p className="mt-8 max-w-md leading-relaxed text-ash" data-reveal>{product.description}</p>
           <div className="mt-10 flex items-center gap-6 border-y border-line py-6" data-reveal>
             <span className="flex items-center gap-3 text-sm">
-              <span className="size-4 rounded-full border border-line-strong" style={{ background: product.colorway.case[0] }} />
+              <span className="size-4 rounded-full border border-line-strong" style={{ background: product.swatch }} />
               {product.finish}
             </span>
             <Price product={product} className="ml-auto" />
           </div>
           <div className="mt-8 flex flex-wrap gap-3" data-reveal>
             <BuyButton productId={product.id} />
-            <Link href="/watches" className="btn btn-ghost">All watches</Link>
+            <Link href="/watches#specs" className="btn btn-ghost">Full specs</Link>
           </div>
         </div>
       </div>
@@ -159,8 +160,8 @@ export function Featured({ product = products[0] }: { product?: Product }) {
   )
 }
 
-/* ---------------- Horizontal collection rail ---------------- */
-export function CollectionRail() {
+/* ---------------- Horizontal feature rail ---------------- */
+export function FeatureRail({ product = products[0] }: { product?: Product }) {
   return (
     // Stable wrapper: GSAP moves the pinned <section> into a pin-spacer, so React must only ever remove this div.
     <div>
@@ -170,34 +171,39 @@ export function CollectionRail() {
           <ul data-hscroll-track className="flex w-max items-stretch gap-4 px-[var(--gutter)] lg:gap-6">
             <li className="flex w-[82vw] shrink-0 snap-start flex-col justify-between gap-10 pb-2 sm:w-[58vw] lg:w-[34vw] lg:pr-10">
               <div>
-                <p className="eyebrow">The collection</p>
+                <p className="eyebrow">Inside the {product.name}</p>
                 <h2 id="collection-title" data-split className="display mt-6 text-[clamp(2.8rem,5.4vw,6rem)]">
-                  Four ways to <span className="italic text-ember">wear time.</span>
+                  Everything, <span className="italic text-ember">on your wrist.</span>
                 </h2>
-                <p className="mt-6 max-w-sm text-ash">Scroll through every finish. Each one ships with the same connected core and a clear price.</p>
+                <p className="mt-6 max-w-sm text-ash">Health, fitness and your phone&rsquo;s essentials in one light, water-resistant watch.</p>
               </div>
-              <p className="mega text-[clamp(5rem,11vw,11rem)] outline-text"><span data-count={products.length}>{String(products.length).padStart(2, '0')}</span></p>
+              <p className="mega text-[clamp(5rem,11vw,11rem)] outline-text"><span data-count={features.length}>{String(features.length).padStart(2, '0')}</span></p>
             </li>
-            {products.map((p, i) => (
-              <li key={p.id} className="group w-[82vw] shrink-0 snap-start sm:w-[58vw] lg:w-[min(30vw,46svh)]" data-cursor="Buy">
-                <div className="product-stage aspect-[4/5]" style={{ '--stage-glow': `${p.colorway.glow}2e` } as React.CSSProperties}>
-                  <ProductVisual product={p} className={p.image ? 'render size-full object-[50%_40%]' : 'render absolute inset-0 m-auto h-[82%] w-auto'} />
-                  {!p.image && <span className="floor" aria-hidden="true" />}
-                  <span className="absolute left-5 top-5 text-[0.6875rem] font-semibold tracking-[0.2em] text-ash">0{i + 1} / 0{products.length}</span>
+            {features.map((f, i) => (
+              <li key={f.title} className="group flex w-[72vw] shrink-0 snap-start flex-col justify-between gap-10 border border-line bg-ink-2/70 p-7 transition-colors duration-700 hover:border-ember/60 sm:w-[44vw] lg:h-[62svh] lg:w-[min(24vw,40svh)]">
+                <div className="flex items-start justify-between text-[0.6875rem] font-semibold tracking-[0.2em] text-ash">
+                  <span>{String(i + 1).padStart(2, '0')} / {String(features.length).padStart(2, '0')}</span>
+                  <span className="size-2 rounded-full bg-ember transition-transform duration-700 group-hover:scale-150" aria-hidden="true" />
                 </div>
-                <div className="flex items-start justify-between gap-6 pt-6">
-                  <div>
-                    <h3 className="display text-3xl xl:text-4xl transition-transform duration-700 ease-[var(--ease-expo)] group-hover:translate-x-2">{p.name}</h3>
-                    <p className="mt-2 text-sm text-ash">{p.finish} · {p.line}</p>
-                  </div>
-                  <Price product={p} className="shrink-0 flex-col !items-end !gap-0 text-right" />
+                <p className="mega text-[clamp(3.6rem,6vw,6rem)] text-bone transition-colors duration-700 group-hover:text-ember">{f.stat}</p>
+                <div>
+                  <h3 className="display text-3xl xl:text-4xl">{f.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-ash">{f.text}</p>
                 </div>
-                <BuyButton productId={p.id} className="btn btn-ghost mt-5 w-full" />
               </li>
             ))}
-            <li className="flex w-[70vw] shrink-0 snap-start flex-col justify-center gap-6 px-6 sm:w-[40vw] lg:w-[24vw]">
-              <p className="display text-5xl">See every <span className="italic text-ember">detail.</span></p>
-              <Link href="/watches" className="btn w-fit" data-magnetic>View collection <Arrow /></Link>
+            <li className="group flex w-[82vw] shrink-0 snap-start flex-col justify-between gap-6 sm:w-[58vw] lg:w-[min(30vw,46svh)]" data-cursor="Buy">
+              <div className="product-stage light relative aspect-[4/5]">
+                <ProductVisual product={product} className="render absolute inset-0 size-full p-[8%]" />
+              </div>
+              <div className="flex items-center justify-between gap-6">
+                <div>
+                  <p className="display text-3xl xl:text-4xl">{product.name}</p>
+                  <p className="mt-1 text-sm text-ash">{product.finish}</p>
+                </div>
+                <Price product={product} className="shrink-0 flex-col !items-end !gap-0 text-right" />
+              </div>
+              <BuyButton productId={product.id} className="btn w-full" />
             </li>
           </ul>
         </div>
@@ -241,7 +247,7 @@ export function ImageStory() {
     <section className="relative isolate flex min-h-[110svh] items-end overflow-hidden" aria-label="Time moves. So should you.">
       <div className="absolute inset-0 -z-10" data-reveal="mask">
         <div className="absolute inset-[-12%_0]" data-speed="0.3">
-          <img src="/watch-hero.png" alt="" className="size-full object-cover object-[50%_45%] opacity-70" loading="lazy" />
+          <LoopVideo className="caption-crop size-full object-cover opacity-60" />
         </div>
         <div className="absolute inset-0 bg-[linear-gradient(0deg,#080808_5%,transparent_55%,#080808_100%)]" />
       </div>

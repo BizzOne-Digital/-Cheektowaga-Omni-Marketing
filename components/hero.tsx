@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { site } from '@/lib/site'
 
-// Swap the file at site.heroVideo (public/media/hero-video.mp4). Until it exists the poster shows, softened.
+// Hero background video (site.heroVideo). No poster frame: the dark stage shows until it plays.
 export function HeroVideo() {
   const ref = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -12,8 +12,10 @@ export function HeroVideo() {
   useEffect(() => {
     const v = ref.current
     if (!v) return
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) v.pause()
-    else v.play().catch(() => {})
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return v.pause()
+    // Autoplay can start before hydration, so the first 'playing' event may already have fired.
+    if (!v.paused) setPlaying(true)
+    else v.play().then(() => setPlaying(true)).catch(() => {})
   }, [])
 
   return (
@@ -21,7 +23,6 @@ export function HeroVideo() {
       ref={ref}
       className="hero-video absolute inset-0 size-full object-cover"
       src={site.heroVideo}
-      poster={site.heroPoster}
       muted
       loop
       playsInline
@@ -32,6 +33,19 @@ export function HeroVideo() {
       onPlaying={() => setPlaying(true)}
     />
   )
+}
+
+// Muted looping background video. React doesn't render the muted attribute in SSR HTML,
+// so playback is started from the client once mounted.
+export function LoopVideo({ className = '' }: { className?: string }) {
+  const ref = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    const v = ref.current
+    if (!v || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    v.muted = true
+    v.play().catch(() => {})
+  }, [])
+  return <video ref={ref} className={className} src={site.heroVideo} muted loop playsInline preload="metadata" aria-hidden="true" />
 }
 
 export function UsTime() {

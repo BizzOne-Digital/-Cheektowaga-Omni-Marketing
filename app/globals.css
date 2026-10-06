@@ -330,21 +330,6 @@ body {
   to { transform: scaleX(1); }
 }
 
-/* ---------- Watch render hands ---------- */
-.hand {
-  transform-box: view-box;
-  transform-origin: 150px 210px;
-  transform: rotate(var(--a, 0deg));
-}
-.hand.live {
-  animation: hand var(--d) linear infinite;
-  animation-delay: var(--delay);
-}
-@keyframes hand {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 /* ---------- Motion initial states (only when JS + motion allowed) ---------- */
 .motion-ok [data-reveal],
 .motion-ok [data-stagger] > * {
@@ -440,6 +425,9 @@ dialog.menu[open] .menu-link {
   background: radial-gradient(60% 55% at 50% 45%, var(--stage-glow, rgb(224 109 52 / 0.18)), transparent 70%), var(--color-ink-2);
   transition: background-color 0.8s var(--ease-expo);
 }
+.product-stage.light {
+  background: #fff;
+}
 .product-stage .render {
   transition: transform 1.2s var(--ease-expo), filter 1.2s var(--ease-expo);
 }
@@ -460,21 +448,13 @@ dialog.menu[open] .menu-link {
   transform: scaleX(1);
 }
 
-/* Floor shadow under renders */
-.floor {
-  position: absolute;
-  left: 50%;
-  bottom: 8%;
-  width: 45%;
-  height: 6%;
-  translate: -50% 0;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(0 0 0 / 0.9), transparent);
-  filter: blur(6px);
-}
-
 /* Hero video: soft atmospheric poster until the real video plays */
-.hero-video {
+.hero-video,
+.caption-crop {
+  /* The supplier video has captions burned into its top-left corner; scaling from the
+     bottom-right pushes that strip out of frame. */
+  transform: scale(1.22);
+  transform-origin: 78% 100%;
   transition: filter 1.4s var(--ease-expo), transform 1.4s var(--ease-expo), opacity 1.4s;
 }
 .hero-video:not([data-playing]) {

@@ -13,19 +13,11 @@ export const site = {
   logo: { full: '/logo/logo-white.png', mark: '/logo/mark-white.png', original: '/logo/smartlogo.png' },
   social: { platform: 'Instagram', handle: '@cheektowaga_music', href: 'https://www.instagram.com/cheektowaga_music/' },
   contact: { name: 'Herbert Reid', phone: '604 256 4183', tel: '+16042564183', email: 'herbertreid@hotmail.com' },
-  // Replace with the client's video. Poster shows while it loads or if the file is missing.
-  heroVideo: '/media/hero-video.mp4',
-  heroPoster: '/watch-hero.png',
-  // Clock and watch hands show US Eastern time (brand is based in Cheektowaga, NY).
+  // Hero video (supplier video, re-encoded, no audio).
+  heroVideo: '/media/hero.mp4',
+  // Hero clock shows US Eastern time (brand is based in Cheektowaga, NY).
   timeZone: 'America/New_York',
   timeLabel: 'New York',
-}
-
-// Current hour/minute/second in the site's US time zone, regardless of the visitor's location.
-export function usTimeParts(date = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone: site.timeZone, hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }).formatToParts(date)
-  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0)
-  return { h: get('hour'), m: get('minute'), s: get('second') }
 }
 
 export const nav = [

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ImageStory, Marquee, PageHeader, Values } from '@/components/sections'
+import { products } from '@/lib/products'
 import { site } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -16,8 +17,8 @@ export default function StoryPage() {
 
       <section className="wrap grid gap-14 pb-32 lg:grid-cols-12" aria-label="About">
         <div className="lg:col-span-5">
-          <div className="aspect-[3/4] overflow-hidden" data-reveal="mask">
-            <img src="/watch-hero.png" alt="Smart watch with a glowing orange face above a concrete plinth" className="size-full object-cover" loading="lazy" />
+          <div className="product-stage light relative aspect-[3/4]" data-reveal="mask">
+            <img src={products[0].images[3].src} alt={products[0].images[3].alt} className="absolute inset-0 size-full object-contain p-[8%]" loading="lazy" />
           </div>
         </div>
         <div className="grid content-center gap-12 lg:col-span-6 lg:col-start-7">

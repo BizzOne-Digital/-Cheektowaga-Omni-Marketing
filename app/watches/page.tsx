@@ -1,25 +1,32 @@
 import type { Metadata } from 'next'
 import { StickyCta } from '@/components/hero'
-import { BuyButton, ProductVisual } from '@/components/order'
+import { Gallery } from '@/components/gallery'
+import { BuyButton } from '@/components/order'
 import { Marquee, OfferFeature, PageHeader, Price } from '@/components/sections'
-import { PRICING_CONFIRMED, products } from '@/lib/products'
+import { features, healthNote, PRICING_CONFIRMED, products, specs } from '@/lib/products'
 import { site } from '@/lib/site'
 
+const product = products[0]
+
 export const metadata: Metadata = {
-  title: 'Watches',
-  description: 'Browse the Affordable Smart Watches collection and order online.',
+  title: product.name,
+  description: `${product.name}: ${product.description} ${PRICING_CONFIRMED ? `$${(product.priceCents / 100).toFixed(2)} USD.` : ''}`.trim(),
   alternates: { canonical: '/watches' },
+  openGraph: { images: [{ url: product.images[0].src, alt: product.images[0].alt }] },
 }
 
-// Product schema carries only facts we have; price is added once it is confirmed.
+// Product schema carries only facts we have (no ratings, reviews or availability claims).
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': products.map((p) => ({
     '@type': 'Product',
-    name: `${p.name} — ${p.finish}`,
+    name: p.name,
+    model: p.model,
+    color: p.finish,
     description: p.description,
+    image: p.images.map((i) => `${site.url}${i.src}`),
     brand: { '@type': 'Brand', name: site.name },
-    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), url: `${site.url}/watches#${p.id}` } } : {}),
+    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), url: `${site.url}/watches` } } : {}),
   })),
 }
 
@@ -27,51 +34,56 @@ export default function WatchesPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
-      <PageHeader eyebrow={`The collection · ${String(products.length).padStart(2, '0')} watches`} title="The watches." accent="choose yours.">
-        Connected watches with a sport-ready attitude. Pick a finish, choose a quantity and order in a minute.
+      <PageHeader eyebrow={`The watch · ${product.model}`} title={`${product.name}.`} accent="made for every day.">
+        {product.description}
       </PageHeader>
 
-      <nav aria-label="Jump to watch" className="wrap mb-10">
-        <ul className="grid grid-cols-2 border-t border-line md:grid-cols-4" data-stagger>
-          {products.map((p, i) => (
-            <li key={p.id} className={`border-b border-line ${i % 2 ? 'border-l' : ''} md:border-l md:first:border-l-0`}>
-              <a href={`#${p.id}`} className="group flex items-center justify-between gap-3 px-1 py-5 text-sm md:px-5">
-                <span><span className="text-ember">0{i + 1}</span>&nbsp;&nbsp;{p.finish}</span>
-                <span className="translate-x-[-6px] text-ember opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:opacity-100" aria-hidden="true">↓</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <article id={product.id} className="wrap group grid scroll-mt-28 items-center gap-10 py-8 lg:grid-cols-12" aria-labelledby="product-name">
+        <div className="relative lg:col-span-7" data-cursor="Buy">
+          <Gallery product={product} />
+        </div>
+        <div className="lg:col-span-5 lg:pl-10">
+          <p className="eyebrow" data-reveal="fade">{product.finish}</p>
+          <h2 id="product-name" data-split className="mega mt-6 text-[clamp(2.8rem,5.5vw,5.6rem)]">{product.name}</h2>
+          <p className="display mt-4 text-3xl italic text-ember-soft" data-reveal>{product.line}</p>
+          <ul className="mt-8 grid gap-3 text-sm text-ash" data-stagger>
+            {features.slice(0, 6).map((f) => (
+              <li key={f.title} className="flex gap-3"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-ember" aria-hidden="true" />{f.title} — {f.text}</li>
+            ))}
+          </ul>
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-y border-line py-6" data-reveal>
+            <Price product={product} />
+            <BuyButton productId={product.id} />
+          </div>
+          <a href="#specs" className="ulink mt-6 inline-flex items-center gap-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" data-reveal>
+            Full specifications <span className="text-ember" aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </article>
 
-      <div className="wrap grid gap-32 py-16 lg:gap-48">
-        {products.map((p, i) => (
-          <article key={p.id} id={p.id} className="group grid scroll-mt-28 items-center gap-10 lg:grid-cols-12" aria-labelledby={`${p.id}-name`}>
-            <div className={`relative lg:col-span-7 ${i % 2 ? 'lg:order-2' : ''}`} data-cursor="Buy">
-              <div className="product-stage aspect-[4/5]" data-reveal="mask" style={{ '--stage-glow': `${p.colorway.glow}33` } as React.CSSProperties}>
-                <ProductVisual product={p} className={p.image ? 'render size-full' : 'render absolute inset-0 m-auto h-[80%] w-auto'} />
-                {!p.image && <span className="floor" aria-hidden="true" />}
-              </div>
-              <p aria-hidden="true" className={`mega pointer-events-none absolute -top-[0.35em] text-[clamp(5rem,13vw,13rem)] outline-text ${i % 2 ? '-left-2 lg:-left-[6%]' : '-right-2 lg:-right-[6%]'}`} data-speed="0.2">
-                0{i + 1}
-              </p>
-            </div>
-            <div className={`lg:col-span-5 ${i % 2 ? 'lg:order-1 lg:pr-10' : 'lg:pl-10'}`}>
-              <p className="eyebrow" data-reveal="fade">{p.finish}</p>
-              <h2 id={`${p.id}-name`} data-split className="mega mt-6 text-[clamp(2.8rem,5.5vw,5.6rem)]">{p.name}</h2>
-              <p className="display mt-4 text-3xl italic text-ember-soft" data-reveal>{p.line}</p>
-              <p className="mt-6 max-w-md leading-relaxed text-ash" data-reveal>{p.description}</p>
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-y border-line py-6" data-reveal>
-                <Price product={p} />
-                <BuyButton productId={p.id} />
-              </div>
-              <p className="mt-4 text-xs text-ash" data-reveal>Placeholder image and details — final specifications to follow.</p>
-            </div>
-          </article>
-        ))}
-      </div>
+      <section id="specs" className="wrap scroll-mt-28 py-32" aria-labelledby="specs-title">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="eyebrow" data-reveal="fade">Specifications</p>
+            <h2 id="specs-title" data-split className="display mt-6 text-[clamp(2.6rem,5vw,5rem)]">
+              The <span className="italic text-ember">details.</span>
+            </h2>
+          </div>
+          <div className="lg:col-span-8">
+            <dl className="border-t border-line" data-stagger>
+              {specs.map(([label, value]) => (
+                <div key={label} className="grid gap-2 border-b border-line py-5 sm:grid-cols-[12rem_1fr] sm:gap-8">
+                  <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash">{label}</dt>
+                  <dd className="leading-relaxed">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-8 max-w-2xl text-xs leading-relaxed text-ash" data-reveal>{healthNote}</p>
+          </div>
+        </div>
+      </section>
 
-      <div className="mt-32"><Marquee words={['Give $35', 'Get the watch', 'Special offer']} /></div>
+      <div className="mt-16"><Marquee words={['Give $35', 'Get the watch', 'Special offer']} /></div>
       <OfferFeature />
       <StickyCta />
     </>

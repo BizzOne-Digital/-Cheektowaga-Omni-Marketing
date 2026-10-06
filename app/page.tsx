@@ -1,5 +1,5 @@
 import { StickyCta } from '@/components/hero'
-import { CollectionRail, Featured, Hero, ImageStory, Intro, Marquee, OfferFeature, Values } from '@/components/sections'
+import { FeatureRail, Featured, Hero, ImageStory, Intro, Marquee, OfferFeature, Values } from '@/components/sections'
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
       <Hero />
       <Marquee />
       <Featured />
-      <CollectionRail />
+      <FeatureRail />
       <Intro />
       <ImageStory />
       <Values />

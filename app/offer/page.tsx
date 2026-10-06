@@ -29,8 +29,8 @@ export default function OfferPage() {
           </div>
         </div>
         <div className="relative lg:col-span-5" data-cursor="Claim">
-          <div className="product-stage aspect-[4/5]" data-reveal="mask">
-            <ProductVisual product={featured} className="render size-full" />
+          <div className="product-stage light relative aspect-[4/5]" data-reveal="mask">
+            <ProductVisual product={featured} className="render absolute inset-0 size-full p-[8%]" />
           </div>
           <div className="absolute -bottom-6 left-6 right-6 border border-line bg-ink/80 p-5 backdrop-blur-md" data-reveal data-delay="0.6">
             <p className="text-[0.625rem] font-semibold uppercase tracking-[0.22em] text-ash">Featured watch</p>
