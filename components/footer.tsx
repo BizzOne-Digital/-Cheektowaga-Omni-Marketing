@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { money, products } from '@/lib/products'
 import { legal, nav, site } from '@/lib/site'
 
 export function Footer() {
@@ -30,12 +31,10 @@ export function Footer() {
             <a className="ulink w-fit" href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
           </div>
           <div className="grid content-start gap-3 text-sm">
-            <p className="eyebrow mb-2">Associated with</p>
-            <p>{site.associated.name}</p>
-            <a className="ulink w-fit" href={site.associated.href} target="_blank" rel="noopener noreferrer">{site.associated.site}</a>
-            <a className="ulink w-fit text-ember" href={site.social.href} target="_blank" rel="noopener noreferrer">
-              {site.social.platform} {site.social.handle}
-            </a>
+            <p className="eyebrow mb-2">Shop</p>
+            <Link className="ulink w-fit" href="/watches">{products[0].name}</Link>
+            <p className="text-ash">{money(products[0].priceCents)} USD</p>
+            <Link className="ulink w-fit text-ash hover:text-bone" href="/offer">Special offer</Link>
           </div>
           <div className="grid content-start gap-3 text-sm">
             <p className="eyebrow mb-2">Explore</p>

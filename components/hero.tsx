@@ -4,37 +4,6 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { site } from '@/lib/site'
 
-// Hero background video (site.heroVideo). No poster frame: the dark stage shows until it plays.
-export function HeroVideo() {
-  const ref = useRef<HTMLVideoElement>(null)
-  const [playing, setPlaying] = useState(false)
-
-  useEffect(() => {
-    const v = ref.current
-    if (!v) return
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return v.pause()
-    // Autoplay can start before hydration, so the first 'playing' event may already have fired.
-    if (!v.paused) setPlaying(true)
-    else v.play().then(() => setPlaying(true)).catch(() => {})
-  }, [])
-
-  return (
-    <video
-      ref={ref}
-      className="hero-video absolute inset-0 size-full object-cover"
-      src={site.heroVideo}
-      muted
-      loop
-      playsInline
-      autoPlay
-      preload="metadata"
-      aria-hidden="true"
-      data-playing={playing || undefined}
-      onPlaying={() => setPlaying(true)}
-    />
-  )
-}
-
 // Muted looping background video. React doesn't render the muted attribute in SSR HTML,
 // so playback is started from the client once mounted.
 export function LoopVideo({ className = '' }: { className?: string }) {

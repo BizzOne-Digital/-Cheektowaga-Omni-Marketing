@@ -21,6 +21,11 @@ export const isLiveMode = validKey && key!.includes('_live_')
 const shippingRate = process.env.STRIPE_SHIPPING_RATE_ID?.trim() || null
 export const shippingAtCheckout = !!shippingRate
 
+// Sales tax via Stripe Tax. Turn on (STRIPE_AUTOMATIC_TAX=true) only after the origin address and
+// tax registrations are set up in Stripe → Tax. Prices are then tax-exclusive and Stripe adds tax
+// at checkout from the customer's billing address.
+export const taxAtCheckout = process.env.STRIPE_AUTOMATIC_TAX?.trim().toLowerCase() === 'true'
+
 /**
  * Why checkout can't run, or null if it can.
  * Live mode is refused while catalog prices are still placeholders, so real cards are never
@@ -79,11 +84,13 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
         price_data: {
           currency: 'usd',
           unit_amount: product.priceCents,
+          ...(taxAtCheckout && { tax_behavior: 'exclusive' as const }),
           product_data: { name: `${product.name} — ${product.finish}`, description: product.line, metadata: { product_id: product.id } },
         },
       },
     ],
     ...(shippingRate && { shipping_options: [{ shipping_rate: shippingRate }] }),
+    ...(taxAtCheckout && { automatic_tax: { enabled: true }, billing_address_collection: 'required' as const }),
     payment_intent_data: {
       description: `${site.name}: ${product.name} × ${order.quantity}`,
       // Structured shipping shows on the payment in the Stripe Dashboard and in receipts.

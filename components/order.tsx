@@ -11,8 +11,8 @@ type Status = { state: 'idle' | 'sending' | 'sent' | 'offline' | 'error'; messag
 const OrderCtx = createContext<(m: Mode) => void>(() => {})
 export const useOrder = () => useContext(OrderCtx)
 
-// shippingAtCheckout: a Stripe shipping rate is configured server-side and is added on Stripe's page.
-export function OrderProvider({ children, shippingAtCheckout = false }: { children: React.ReactNode; shippingAtCheckout?: boolean }) {
+// shippingAtCheckout / taxAtCheckout: configured server-side (lib/payments.ts) and added on Stripe's page.
+export function OrderProvider({ children, shippingAtCheckout = false, taxAtCheckout = false }: { children: React.ReactNode; shippingAtCheckout?: boolean; taxAtCheckout?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [mode, setMode] = useState<Mode | null>(null)
 
@@ -45,7 +45,7 @@ export function OrderProvider({ children, shippingAtCheckout = false }: { childr
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
         onClose={() => setTimeout(() => setMode(null), 700)}
       >
-        {mode && <OrderPanel key={mode.kind === 'buy' ? mode.productId : 'offer'} mode={mode} shippingAtCheckout={shippingAtCheckout} close={() => dialog.current?.close()} />}
+        {mode && <OrderPanel key={mode.kind === 'buy' ? mode.productId : 'offer'} mode={mode} shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout} close={() => dialog.current?.close()} />}
       </dialog>
     </OrderCtx.Provider>
   )
@@ -75,7 +75,7 @@ export function ProductVisual({ product, className = '' }: { product: Product; c
   return <img src={img.src} alt={img.alt} className={`object-contain ${className}`} loading="lazy" />
 }
 
-function OrderPanel({ mode, close, shippingAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean }) {
+function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean; taxAtCheckout: boolean }) {
   const isOffer = mode.kind === 'offer'
   const product = isOffer ? products[0] : getProduct(mode.productId)!
   const [qty, setQty] = useState(1)
@@ -248,7 +248,12 @@ function OrderPanel({ mode, close, shippingAtCheckout }: { mode: Mode; close: ()
               <dl className="grid gap-3 text-sm">
                 <Row term={`${product.name} × ${qty}`} value={money(subtotal)} />
                 <Row term="Shipping & handling" value={shippingAtCheckout ? 'Added at secure checkout' : 'To be confirmed'} />
-                <Row term={shippingAtCheckout ? 'Subtotal' : 'Order total'} value={shippingAtCheckout ? money(subtotal) : `${money(subtotal)} + shipping`} strong />
+                {taxAtCheckout && <Row term="Sales tax" value="Calculated at checkout" />}
+                <Row
+                  term={shippingAtCheckout || taxAtCheckout ? 'Subtotal' : 'Order total'}
+                  value={shippingAtCheckout ? money(subtotal) : `${money(subtotal)} + shipping`}
+                  strong
+                />
               </dl>
             )}
 

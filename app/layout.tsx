@@ -7,7 +7,7 @@ import { Loader } from '@/components/loader'
 import { Motion } from '@/components/motion'
 import { Nav } from '@/components/nav'
 import { OrderProvider } from '@/components/order'
-import { shippingAtCheckout } from '@/lib/payments'
+import { shippingAtCheckout, taxAtCheckout } from '@/lib/payments'
 import { products } from '@/lib/products'
 import { site } from '@/lib/site'
 import './globals.css'
@@ -30,7 +30,7 @@ export const viewport: Viewport = { colorScheme: 'dark', themeColor: '#080808' }
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
-    { '@type': 'Organization', name: site.name, url: site.url, email: site.contact.email, telephone: site.contact.tel, description: site.about, logo: `${site.url}${site.logo.original}`, sameAs: [site.social.href] },
+    { '@type': 'Organization', name: site.name, url: site.url, email: site.contact.email, telephone: site.contact.tel, description: site.about, logo: `${site.url}${site.logo.original}` },
     { '@type': 'WebSite', name: site.name, url: site.url },
   ],
 }
@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Loader />
         <BgStage />
-        <OrderProvider shippingAtCheckout={shippingAtCheckout}>
+        <OrderProvider shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout}>
           <Nav />
           <main id="main">{children}</main>
           <Footer />

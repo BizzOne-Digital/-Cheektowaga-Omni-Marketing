@@ -55,7 +55,8 @@ export function Motion() {
               autoSplit: true,
               onSplit: (self) => {
                 // Pad each mask so tight display line-heights don't crop glyph tops/bottoms.
-                gsap.set(self.masks, { paddingBlock: '0.14em', marginBlock: '-0.14em' })
+                // Clip only vertically (the reveal needs that); overflow-x stays visible so a wide word is never sliced.
+                gsap.set(self.masks, { paddingBlock: '0.14em', marginBlock: '-0.14em', overflowX: 'visible', overflowY: 'clip' })
                 return gsap.from(self.lines, {
                   yPercent: 115,
                   rotate: 2,

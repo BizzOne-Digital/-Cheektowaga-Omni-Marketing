@@ -2,20 +2,22 @@
 export const site = {
   name: 'Affordable Smart Watches',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  title: 'Affordable Smart Watches | Connected Technology at an Accessible Price',
+  title: 'Affordable Smart Watches | L16 Pro 4G Safety Smartwatch',
   description:
-    'Shop Affordable Smart Watches — connected, modern watches designed for active everyday lifestyles. Explore available watches, special offers, and online ordering.',
-  tagline: 'Connected technology. Sport-ready design. Everyday performance.',
+    'Shop the L16 Pro Smartwatch from Affordable Smart Watches: 4G calling, GPS location tracking, fall alerts and one-touch SOS that helps seniors stay independent and families stay reassured.',
+  // From the client's L16 Pro banner on affordablesmartwatches.com.
+  tagline: 'More connectivity. More freedom.',
+  pillars: ['Stay connected.', 'Live healthier.', 'Do more.'],
   about:
-    'Affordable Smart Watches is a new pop-up go-to site for innovative product marketing and great ways to pass the time.',
-  associated: { name: 'Cheektowaga - Omni', site: 'cheektowagamusic.com', href: 'https://cheektowagamusic.com' },
+    'Affordable Smart Watches brings practical 4G safety smartwatches to families at a fair price, helping seniors stay independent and the people who love them stay reassured.',
   // Logo source: public/logo/smartlogo.png (navy). White versions are generated for the dark UI.
   logo: { full: '/logo/logo-white.png', mark: '/logo/mark-white.png', original: '/logo/smartlogo.png' },
-  social: { platform: 'Instagram', handle: '@cheektowaga_music', href: 'https://www.instagram.com/cheektowaga_music/' },
+  // Client will supply final store/contact wording; update here.
   contact: { name: 'Herbert Reid', phone: '604 256 4183', tel: '+16042564183', email: 'herbertreid@hotmail.com' },
-  // Hero video (supplier video, re-encoded, no audio).
-  heroVideo: '/media/hero.mp4',
-  // Hero clock shows US Eastern time (brand is based in Cheektowaga, NY).
+  // L16 Pro product video from the client's site, re-encoded without audio.
+  heroVideo: '/media/l16-pro.mp4',
+  promoBanner: '/media/l16-pro-banner.webp',
+  // Hero clock shows US Eastern time.
   timeZone: 'America/New_York',
   timeLabel: 'New York',
 }

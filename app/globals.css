@@ -10,6 +10,8 @@
   --color-ember: #e06d34;
   --color-ember-soft: #f29a68;
   --color-champagne: #d8c7a6;
+  /* Secondary accent from the client's L16 Pro banner. Use sparingly. */
+  --color-violet: #8f4bff;
   --color-line: rgb(245 242 237 / 0.1);
   --color-line-strong: rgb(245 242 237 / 0.22);
 
@@ -446,20 +448,6 @@ dialog.menu[open] .menu-link {
 }
 .group:hover .product-stage::after {
   transform: scaleX(1);
-}
-
-/* Hero video: soft atmospheric poster until the real video plays */
-.hero-video,
-.caption-crop {
-  /* The supplier video has captions burned into its top-left corner; scaling from the
-     bottom-right pushes that strip out of frame. */
-  transform: scale(1.22);
-  transform-origin: 78% 100%;
-  transition: filter 1.4s var(--ease-expo), transform 1.4s var(--ease-expo), opacity 1.4s;
-}
-.hero-video:not([data-playing]) {
-  filter: blur(24px) brightness(0.55) saturate(1.2);
-  transform: scale(1.35);
 }
 
 /* Custom cursor */

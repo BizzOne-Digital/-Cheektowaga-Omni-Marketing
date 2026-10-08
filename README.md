@@ -13,12 +13,23 @@ Use pnpm (the project's lockfile). Add packages with `corepack pnpm add <pkg>` s
 
 | What | Where |
 |------|-------|
-| Product (L16 Pro 4G, $49), features, specs, health/SIM note | `lib/products.ts`. Specs follow the Toptraking L16PRO 4G listing. Add objects to `products` to sell more models. |
-| Hero video | `public/media/hero.mp4` (Made-in-China supplier video, re-encoded 1600px, no audio). Also loops behind the "Time moves" section. Path in `lib/site.ts`. |
-| Product images | `public/media/l16/photo-1..7.jpg` (Toptraking gallery, white background, shown on white panels). Order and alt text set in `lib/products.ts`. |
+| Product (L16 Pro Smartwatch, **$99**), client-approved heading and copy, specs, SIM/health note | `lib/products.ts`. Specs follow the Toptraking L16PRO 4G listing, reworded. Add objects to `products` to sell more models. |
+| Product photos — **TEMPORARY** | `public/media/l16/photo-1..7.jpg` (Toptraking gallery, white background). Replace with the client's own photos when they arrive: overwrite the files or edit `images` in `lib/products.ts`. |
+| Product video | `public/media/l16-pro.mp4` (client's L16 Pro video from affordablesmartwatches.com, re-encoded, no audio). Plays in the hero card and on the Watches page. |
+| Promo banner | `public/media/l16-pro-banner.webp` (client's banner). Shows below the hero, links to /watches. It has the price ($99) baked in, so replace it if the price changes. |
+| Brand copy, contact details, story | `lib/site.ts` (`about`, `tagline`, `pillars`, `contact`), `app/story/page.tsx`. Client to supply final store/contact wording. |
 | Policies | `app/legal/[slug]/page.tsx` (Privacy, Terms, Shipping, Returns). |
-| Shipping cost | Create a Shipping Rate in Stripe and set `STRIPE_SHIPPING_RATE_ID`. Until then the order panel shows "To be confirmed". |
 | Ship-to countries | `shipCountries` in `lib/site.ts` (currently US, Canada). |
+
+## Pricing, shipping & tax checklist
+
+| Item | Where | Status |
+|------|-------|--------|
+| Price | `priceCents` in `lib/products.ts` (9900 = $99.00). Also baked into the promo banner image. | Set |
+| Price lock | `PRICING_CONFIRMED` — live checkout is refused while `false`. | `true` |
+| Shipping | Create a Shipping Rate in Stripe, set `STRIPE_SHIPPING_RATE_ID`. Until then the order panel says "To be confirmed" and no shipping is charged. | Waiting for rate |
+| Sales tax | Set up Stripe → Tax (origin address + registrations), then `STRIPE_AUTOMATIC_TAX=true`. Prices become tax-exclusive and the order panel shows "Sales tax: calculated at checkout". | Off until set up |
+| Quantity limit | 1–10 per order (`parseOrder` in `lib/payments.ts`). | Set |
 
 ## Environment (`.env.example` → `.env.local` / Vercel env)
 

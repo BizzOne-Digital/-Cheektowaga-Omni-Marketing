@@ -2,15 +2,15 @@ import type { Metadata } from 'next'
 import { StickyCta } from '@/components/hero'
 import { Gallery } from '@/components/gallery'
 import { BuyButton } from '@/components/order'
-import { Marquee, OfferFeature, PageHeader, Price } from '@/components/sections'
-import { features, healthNote, PRICING_CONFIRMED, products, specs } from '@/lib/products'
+import { FeatureTable, Marquee, OfferFeature, Price } from '@/components/sections'
+import { healthNote, highlights, money, PRICING_CONFIRMED, products, specs } from '@/lib/products'
 import { site } from '@/lib/site'
 
 const product = products[0]
 
 export const metadata: Metadata = {
   title: product.name,
-  description: `${product.name}: ${product.description} ${PRICING_CONFIRMED ? `$${(product.priceCents / 100).toFixed(2)} USD.` : ''}`.trim(),
+  description: `${product.name}: ${product.description} ${PRICING_CONFIRMED ? `${money(product.priceCents)} USD.` : ''}`.trim(),
   alternates: { canonical: '/watches' },
   openGraph: { images: [{ url: product.images[0].src, alt: product.images[0].alt }] },
 }
@@ -34,9 +34,14 @@ export default function WatchesPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
-      <PageHeader eyebrow={`The watch · ${product.model}`} title={`${product.name}.`} accent="made for every day.">
-        {product.description}
-      </PageHeader>
+      <header className="wrap pb-16 pt-40 lg:pb-20 lg:pt-48">
+        <p className="eyebrow" data-reveal="fade">{product.name} · {product.model}</p>
+        <h1 className="mt-8" aria-label={product.heading}>
+          <span data-split className="mega block text-[clamp(2.8rem,7.5vw,8rem)]">Peace of mind on your wrist:</span>
+          <span data-split data-delay="0.12" className="display mt-2 block text-[clamp(2.4rem,6vw,6.5rem)] italic text-ember">The L16 Pro Smartwatch</span>
+        </h1>
+        <p className="mt-10 max-w-2xl text-lg leading-relaxed text-ash" data-reveal data-delay="0.3">{product.description}</p>
+      </header>
 
       <article id={product.id} className="wrap group grid scroll-mt-28 items-center gap-10 py-8 lg:grid-cols-12" aria-labelledby="product-name">
         <div className="relative lg:col-span-7" data-cursor="Buy">
@@ -44,11 +49,14 @@ export default function WatchesPage() {
         </div>
         <div className="lg:col-span-5 lg:pl-10">
           <p className="eyebrow" data-reveal="fade">{product.finish}</p>
-          <h2 id="product-name" data-split className="mega mt-6 text-[clamp(2.8rem,5.5vw,5.6rem)]">{product.name}</h2>
+          <h2 id="product-name" data-split className="mega mt-6 text-[clamp(2.6rem,4.6vw,4.6rem)]">{product.name}</h2>
           <p className="display mt-4 text-3xl italic text-ember-soft" data-reveal>{product.line}</p>
-          <ul className="mt-8 grid gap-3 text-sm text-ash" data-stagger>
-            {features.slice(0, 6).map((f) => (
-              <li key={f.title} className="flex gap-3"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-ember" aria-hidden="true" />{f.title} — {f.text}</li>
+          <ul className="mt-8 grid gap-5 text-sm" data-stagger>
+            {highlights.map((h) => (
+              <li key={h.title} className="flex gap-3">
+                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ember" aria-hidden="true" />
+                <span><span className="font-semibold text-bone">{h.title}.</span> <span className="text-ash">{h.text}</span></span>
+              </li>
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-y border-line py-6" data-reveal>
@@ -60,6 +68,22 @@ export default function WatchesPage() {
           </a>
         </div>
       </article>
+
+      <FeatureTable product={product} />
+
+      {product.video && (
+        <section className="wrap pt-32" aria-labelledby="video-title">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+            <h2 id="video-title" data-split className="display text-[clamp(2.4rem,4.6vw,4.6rem)]">
+              See it <span className="italic text-ember">in action.</span>
+            </h2>
+            <p className="max-w-sm text-sm text-ash" data-reveal>SIM setup, fitting, the SOS key and the main screens, in about a minute.</p>
+          </div>
+          <div className="overflow-hidden border border-line-strong bg-white" data-reveal="mask">
+            <video src={product.video} controls muted playsInline preload="metadata" className="aspect-video w-full" aria-label={`${product.name} product video (no sound)`} />
+          </div>
+        </section>
+      )}
 
       <section id="specs" className="wrap scroll-mt-28 py-32" aria-labelledby="specs-title">
         <div className="grid gap-12 lg:grid-cols-12">
