@@ -128,6 +128,7 @@ export const specs: [label: string, value: string][] = [
   ['Camera', 'None'],
   ['Size & weight', '55 × 31 × 14.8 mm · 40 g'],
   ['Colour', 'Black'],
+  ['Availability', 'United States only. Ships to US addresses only.'],
   ['In the box', 'VL16 Pro Smartwatch, user manual (English), screwdriver, SIM pin, gift box'],
 ]
 
@@ -154,3 +155,22 @@ export const featureTable: [feature: string, detail: string][] = [
 
 export const healthNote =
   'SOS, calling and location need an active nano-SIM with a 4G data plan (not included). Health readings are for general wellness reference only; the VL16 Pro Smartwatch is not a medical device.'
+
+// Price comparison (Watches + Home). Competitor figures are US list prices from public sources, checked October 2026:
+// Apple Watch SE 3 GPS + Cellular — apple.com list $299, carrier plan about $10/mo.
+// Bay Alarm Medical SOS Smartwatch — $199 device + $39.95/mo monitoring, fall detection +$10/mo
+// (theseniorlist.com/medical-alert-systems/bay-alarm-medical/sos-smartwatch).
+// Re-check before each campaign; prices change. Cellular/SIM plans are excluded for every watch.
+export const comparisonChecked = 'October 2026'
+export const comparison = {
+  watches: ['VL16 Pro', 'Apple Watch SE 3 (GPS + Cellular)', 'Bay Alarm Medical SOS Smartwatch'],
+  rows: [
+    { label: 'Watch price', values: ['$125', '$299', '$199'] },
+    { label: 'Monthly service fee', values: ['None', 'None', '$39.95 monitoring'] },
+    { label: 'Fall alerts', values: ['Included', 'Included', '+$10 / month'] },
+    { label: 'First-year cost, with fall alerts', values: ['$125', '$299', '$798'], total: true },
+    { label: 'SOS button & GPS location', values: ['Yes', 'Yes', 'Yes'] },
+    { label: 'Works without an iPhone', values: ['Yes', 'No, needs an iPhone to set up', 'Yes'] },
+    { label: 'Who gets the alert', values: ['Family (up to 3 contacts)', 'Emergency services & contacts', '24/7 monitoring centre'] },
+  ],
+}

@@ -33,8 +33,8 @@ export function Footer() {
           <div className="grid content-start gap-3 text-sm">
             <p className="eyebrow mb-2">Shop</p>
             <Link className="ulink w-fit" href="/watches">{products[0].name}</Link>
-            <p className="text-ash">{money(products[0].priceCents)} USD</p>
-            <Link className="ulink w-fit text-ash hover:text-bone" href="/offer">Special offer</Link>
+            <p className="text-ash">{money(products[0].priceCents)} USD · US customers only</p>
+            <Link className="ulink w-fit text-ash hover:text-bone" href="/compare">Compare prices</Link>
           </div>
           <div className="grid content-start gap-3 text-sm">
             <p className="eyebrow mb-2">Explore</p>

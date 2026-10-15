@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { getProduct, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
-import { offer, shipCountries, site } from '@/lib/site'
+import { getProduct, money, PRICING_CONFIRMED, type Product } from '@/lib/products'
+import { availability, site, usStates } from '@/lib/site'
 import { Field } from './field'
 
-type Mode = { kind: 'buy'; productId: string } | { kind: 'offer' }
-type Status = { state: 'idle' | 'sending' | 'sent' | 'offline' | 'error'; message?: string }
+type Mode = { productId: string }
+type Status = { state: 'idle' | 'sending' | 'offline' | 'error'; message?: string }
 
 const OrderCtx = createContext<(m: Mode) => void>(() => {})
 export const useOrder = () => useContext(OrderCtx)
@@ -45,7 +45,7 @@ export function OrderProvider({ children, shippingAtCheckout = false, taxAtCheck
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
         onClose={() => setTimeout(() => setMode(null), 700)}
       >
-        {mode && <OrderPanel key={mode.kind === 'buy' ? mode.productId : 'offer'} mode={mode} shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout} close={() => dialog.current?.close()} />}
+        {mode && <OrderPanel key={mode.productId} mode={mode} shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout} close={() => dialog.current?.close()} />}
       </dialog>
     </OrderCtx.Provider>
   )
@@ -60,16 +60,7 @@ export function BuyButton({ productId, className = 'btn', children = 'Buy Now' }
       </button>
     )
   return (
-    <button type="button" className={className} onClick={() => open({ kind: 'buy', productId })} data-magnetic>
-      {children} <span className="btn-arrow" aria-hidden="true">→</span>
-    </button>
-  )
-}
-
-export function ClaimButton({ className = 'btn', children = 'Claim Offer' }: { className?: string; children?: React.ReactNode }) {
-  const open = useOrder()
-  return (
-    <button type="button" className={className} onClick={() => open({ kind: 'offer' })} data-magnetic>
+    <button type="button" className={className} onClick={() => open({ productId })} data-magnetic>
       {children} <span className="btn-arrow" aria-hidden="true">→</span>
     </button>
   )
@@ -82,8 +73,7 @@ export function ProductVisual({ product, className = '' }: { product: Product; c
 }
 
 function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean; taxAtCheckout: boolean }) {
-  const isOffer = mode.kind === 'offer'
-  const product = isOffer ? products[0] : getProduct(mode.productId)!
+  const product = getProduct(mode.productId)!
   const [qty, setQty] = useState(1)
   const [status, setStatus] = useState<Status>({ state: 'idle' })
   const [lastOrder, setLastOrder] = useState<Record<string, string>>({})
@@ -102,20 +92,7 @@ function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: 
     setLastOrder(data)
     setStatus({ state: 'sending' })
 
-    if (isOffer && offer.claimUrl) {
-      window.location.href = offer.claimUrl
-      return
-    }
-
-    const res = isOffer
-      ? await post('/api/contact', {
-          type: 'Special offer claim',
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          message: `Offer claim: $${offer.donation} donation to ${offer.charity} + shipping & handling for ${product.name}.\nShip to: ${data.address}, ${data.city} ${data.postal}, ${data.country}`,
-        })
-      : await post('/api/checkout', { productId: product.id, quantity: qty, customer: data })
+    const res = await post('/api/checkout', { productId: product.id, quantity: qty, customer: data })
 
     if (res.error === 'not_configured') return setStatus({ state: 'offline' })
     if (res.error) return setStatus({ state: 'error', message: res.error })
@@ -123,20 +100,19 @@ function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: 
       window.location.href = res.url
       return
     }
-    setStatus({ state: 'sent' })
   }
 
   const mailto = () => {
     const d = lastOrder
-    const subject = isOffer ? 'Special offer claim' : `Order: ${product.name} x${qty}`
-    const body = `${subject}\n\nName: ${d.name}\nEmail: ${d.email}\nPhone: ${d.phone}\nShip to: ${d.address}, ${d.city} ${d.postal}, ${d.country}`
+    const subject = `Order: ${product.name} x${qty}`
+    const body = `${subject}\n\nName: ${d.name}\nEmail: ${d.email}\nPhone: ${d.phone}\nShip to: ${d.address}, ${d.city}, ${d.state} ${d.postal}, ${d.country}`
     return `mailto:${site.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   }
 
   return (
     <div className="flex min-h-full flex-col">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-ink-2/90 px-6 py-4 backdrop-blur-md sm:px-10">
-        <p className="eyebrow">{isOffer ? 'Special offer' : 'Your order'}</p>
+        <p className="eyebrow">Your order</p>
         <button type="button" onClick={close} className="group flex min-h-11 items-center gap-3 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash hover:text-bone">
           Close
           <span className="relative block size-4" aria-hidden="true">
@@ -151,59 +127,41 @@ function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: 
           <ProductVisual product={product} className="render size-full p-2" />
         </div>
         <div>
-          <h2 id="order-title" className="display text-4xl sm:text-5xl">
-            {isOffer ? (
-              <>
-                Give ${offer.donation}.<br />
-                <span className="italic text-ember">Get the watch.</span>
-              </>
-            ) : (
-              product.name
-            )}
-          </h2>
-          <p className="mt-3 text-sm text-ash">
-            {isOffer ? `${product.name} · ${product.finish}` : `${product.finish} · ${product.line}`}
+          <h2 id="order-title" className="display text-4xl sm:text-5xl">{product.name}</h2>
+          <p className="mt-3 text-sm text-ash">{product.finish} · {product.line}</p>
+          <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="text-2xl font-semibold tabular-nums">{money(product.priceCents)}</span>
+            <span className="text-xs text-ash">USD each</span>
+            {!PRICING_CONFIRMED && <span className="border border-champagne/40 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-champagne">Provisional price</span>}
           </p>
-          {!isOffer && (
-            <p className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-2xl font-semibold tabular-nums">{money(product.priceCents)}</span>
-              <span className="text-xs text-ash">USD each</span>
-              {!PRICING_CONFIRMED && <span className="border border-champagne/40 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-champagne">Provisional price</span>}
-            </p>
-          )}
         </div>
       </div>
 
-      {status.state === 'sent' ? (
-        <Notice title="Claim sent." body={`Thank you, ${lastOrder.name}. We'll reply to ${lastOrder.email} with the donation and shipping steps.`} close={close} />
-      ) : status.state === 'offline' ? (
+      {status.state === 'offline' ? (
         <Notice
-          title={isOffer ? 'Offer claims aren’t connected online yet.' : 'Online payment isn’t connected yet.'}
-          body={`Nothing has been charged and no order was placed. Send your ${isOffer ? 'claim' : 'order'} to ${site.contact.name} directly and it will be confirmed personally.`}
+          title="Online payment isn’t connected yet."
+          body={`Nothing has been charged and no order was placed. Send your order to ${site.contact.name} directly and it will be confirmed personally.`}
           close={close}
         >
-          <a href={mailto()} className="btn">Email this {isOffer ? 'claim' : 'order'} <span className="btn-arrow" aria-hidden="true">→</span></a>
+          <a href={mailto()} className="btn">Email this order <span className="btn-arrow" aria-hidden="true">→</span></a>
           <a href={`tel:${site.contact.tel}`} className="btn btn-ghost">Call {site.contact.phone}</a>
         </Notice>
       ) : (
         <form onSubmit={submit} className="grid flex-1 gap-10 px-6 py-8 sm:px-10">
-          {isOffer ? (
-            <ol className="grid gap-4 border-l border-ember pl-5 text-sm text-ash">
-              <li><span className="text-bone">01 —</span> Donate ${offer.donation} USD to {offer.charity}.</li>
-              <li><span className="text-bone">02 —</span> Cover the applicable shipping and handling.</li>
-              <li><span className="text-bone">03 —</span> Receive the featured smart watch at no additional product cost.</li>
-            </ol>
-          ) : (
-            <fieldset className="flex items-center justify-between gap-6">
-              <legend className="sr-only">Quantity</legend>
-              <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash" aria-hidden="true">Quantity</span>
-              <div className="flex items-center border border-line-strong">
-                <button type="button" className="grid size-12 place-items-center text-lg transition-colors hover:bg-ink-4 disabled:opacity-30" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label="Decrease quantity">−</button>
-                <output className="w-12 text-center font-semibold tabular-nums" aria-live="polite" aria-label="Quantity">{qty}</output>
-                <button type="button" className="grid size-12 place-items-center text-lg transition-colors hover:bg-ink-4 disabled:opacity-30" onClick={() => setQty((q) => Math.min(10, q + 1))} disabled={qty >= 10} aria-label="Increase quantity">+</button>
-              </div>
-            </fieldset>
-          )}
+          <p className="flex gap-3 border-l-2 border-violet bg-violet/10 px-4 py-3 text-sm">
+            <span className="shrink-0 font-bold uppercase tracking-[0.14em] text-violet">US only</span>
+            <span className="text-bone/85">{availability.long}</span>
+          </p>
+
+          <fieldset className="flex items-center justify-between gap-6">
+            <legend className="sr-only">Quantity</legend>
+            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash" aria-hidden="true">Quantity</span>
+            <div className="flex items-center border border-line-strong">
+              <button type="button" className="grid size-12 place-items-center text-lg transition-colors hover:bg-ink-4 disabled:opacity-30" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label="Decrease quantity">−</button>
+              <output className="w-12 text-center font-semibold tabular-nums" aria-live="polite" aria-label="Quantity">{qty}</output>
+              <button type="button" className="grid size-12 place-items-center text-lg transition-colors hover:bg-ink-4 disabled:opacity-30" onClick={() => setQty((q) => Math.min(10, q + 1))} disabled={qty >= 10} aria-label="Increase quantity">+</button>
+            </div>
+          </fieldset>
 
           <fieldset className="grid gap-6">
             <legend className="mb-6 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-bone">Your details</legend>
@@ -215,60 +173,53 @@ function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: 
           </fieldset>
 
           <fieldset className="grid gap-6">
-            <legend className="mb-6 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-bone">Shipping</legend>
+            <legend className="mb-6 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-bone">Shipping · US addresses only</legend>
             <Field id="f-address" name="address" label="Street address" autoComplete="street-address" />
             <div className="grid gap-6 sm:grid-cols-3">
               <Field id="f-city" name="city" label="City" autoComplete="address-level2" />
-              <Field id="f-postal" name="postal" label="Postal / ZIP" autoComplete="postal-code" />
               <div className="field">
-                <label htmlFor="f-country">Country <span className="text-ember" aria-hidden="true">*</span></label>
-                <select id="f-country" name="country" required autoComplete="country" defaultValue={shipCountries[0][0]}>
-                  {shipCountries.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+                <label htmlFor="f-state">State <span className="text-ember" aria-hidden="true">*</span></label>
+                <select id="f-state" name="state" required autoComplete="address-level1" defaultValue="">
+                  <option value="" disabled>Select</option>
+                  {usStates.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
                 </select>
               </div>
+              <Field id="f-postal" name="postal" label="ZIP code" autoComplete="postal-code" inputMode="numeric" pattern="\d{5}(-\d{4})?" error="Enter a 5-digit US ZIP code." />
             </div>
+            <input type="hidden" name="country" value="US" />
+            <p className="text-xs text-ash">Country: <span className="text-bone">United States</span>. We can&rsquo;t ship to Canada or any other country.</p>
           </fieldset>
 
-          {!isOffer && (
-            <div className="grid gap-4">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-bone">Payment</p>
-              <div className="flex items-center justify-between gap-4 border border-ember/60 bg-ember/5 px-5 py-4">
-                <span className="flex items-center gap-3 text-sm">
-                  <span className="grid size-4 place-items-center rounded-full border border-ember"><span className="size-2 rounded-full bg-ember" /></span>
-                  Card &amp; wallet payment
-                </span>
-                <span className="text-xs text-ash">Secured by Stripe</span>
-              </div>
-              <p className="text-xs leading-relaxed text-ash">You&rsquo;ll be taken to Stripe&rsquo;s secure checkout to pay. Card details never touch this site.</p>
+          <div className="grid gap-4">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-bone">Payment</p>
+            <div className="flex items-center justify-between gap-4 border border-ember/60 bg-ember/5 px-5 py-4">
+              <span className="flex items-center gap-3 text-sm">
+                <span className="grid size-4 place-items-center rounded-full border border-ember"><span className="size-2 rounded-full bg-ember" /></span>
+                Card &amp; wallet payment
+              </span>
+              <span className="text-xs text-ash">Secured by Stripe</span>
             </div>
-          )}
+            <p className="text-xs leading-relaxed text-ash">You&rsquo;ll be taken to Stripe&rsquo;s secure checkout to pay. Card details never touch this site.</p>
+          </div>
 
           <div className="mt-auto grid gap-5 border-t border-line pt-8">
-            {isOffer ? (
-              <dl className="grid gap-3 text-sm">
-                <Row term={`Donation to ${offer.charity}`} value={`$${offer.donation}.00 USD`} />
-                <Row term="Shipping & handling" value="Applicable rate" />
-                <Row term="Smart watch" value="No additional product cost" strong />
-              </dl>
-            ) : (
-              <dl className="grid gap-3 text-sm">
-                <Row term={`${product.name} × ${qty}`} value={money(subtotal)} />
-                <Row term="Shipping & handling" value={shippingAtCheckout ? 'Added at secure checkout' : 'To be confirmed'} />
-                {taxAtCheckout && <Row term="Sales tax" value="Calculated at checkout" />}
-                <Row
-                  term={shippingAtCheckout || taxAtCheckout ? 'Subtotal' : 'Order total'}
-                  value={shippingAtCheckout ? money(subtotal) : `${money(subtotal)} + shipping`}
-                  strong
-                />
-              </dl>
-            )}
+            <dl className="grid gap-3 text-sm">
+              <Row term={`${product.name} × ${qty}`} value={money(subtotal)} />
+              <Row term="Shipping & handling" value={shippingAtCheckout ? 'Added at secure checkout' : 'To be confirmed'} />
+              {taxAtCheckout && <Row term="Sales tax" value="Calculated at checkout" />}
+              <Row
+                term={shippingAtCheckout || taxAtCheckout ? 'Subtotal' : 'Order total'}
+                value={shippingAtCheckout ? money(subtotal) : `${money(subtotal)} + shipping`}
+                strong
+              />
+            </dl>
 
             {status.state === 'error' && (
               <p role="alert" className="border-l-2 border-[#ff7a4d] pl-4 text-sm text-[#ffb190]">{status.message}</p>
             )}
 
             <button type="submit" className="btn w-full" disabled={status.state === 'sending'}>
-              {status.state === 'sending' ? 'Please wait…' : isOffer ? 'Claim Offer' : `Continue to payment · ${money(subtotal)}`}
+              {status.state === 'sending' ? 'Please wait…' : `Continue to payment · ${money(subtotal)}`}
               <span className="btn-arrow" aria-hidden="true">→</span>
             </button>
             <p className="text-center text-xs text-ash">

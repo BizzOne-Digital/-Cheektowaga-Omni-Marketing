@@ -20,7 +20,8 @@ Use pnpm (the project's lockfile). Add packages with `corepack pnpm add <pkg>` s
 | Promo banner | `public/media/vl16-pro-banner.webp` (client's VL16 Pro banner, from `public/media/banner.jpeg`). Shows below the hero, links to /watches. It has the price ($125) baked in, so replace it if the price changes. |
 | Brand copy, contact details, story | `lib/site.ts` (`about`, `tagline`, `pillars`, `contact`), `app/story/page.tsx`. Client to supply final store/contact wording. |
 | Policies | `app/legal/[slug]/page.tsx` (Privacy, Terms, Shipping, Returns). |
-| Ship-to countries | `shipCountries` in `lib/site.ts` (currently US, Canada). |
+| Ship-to / geoblock | US only. `usStates` + `availability` in `lib/site.ts`; enforced in `lib/payments.ts` (Vercel IP country + US address, state and ZIP). |
+| Price comparison | `comparison` in `lib/products.ts`. Re-check competitor prices before each campaign. |
 
 ## Pricing, shipping & tax checklist
 

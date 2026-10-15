@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import { StickyCta } from '@/components/hero'
 import { Gallery } from '@/components/gallery'
 import { BuyButton } from '@/components/order'
-import { FeatureTable, Marquee, OfferFeature, Price } from '@/components/sections'
+import { FeatureTable, Marquee, Price, PriceCompare } from '@/components/sections'
 import { healthNote, highlights, money, PRICING_CONFIRMED, products, specs } from '@/lib/products'
-import { site } from '@/lib/site'
+import { availability, site } from '@/lib/site'
 
 const product = products[0]
 
@@ -26,7 +26,7 @@ const jsonLd = {
     description: p.description,
     image: p.images.map((i) => `${site.url}${i.src}`),
     brand: { '@type': 'Brand', name: site.name },
-    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), url: `${site.url}/watches`, ...(p.soldOut && { availability: 'https://schema.org/SoldOut' }) } } : {}),
+    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), eligibleRegion: { '@type': 'Country', name: 'US' }, url: `${site.url}/watches`, ...(p.soldOut && { availability: 'https://schema.org/SoldOut' }) } } : {}),
   })),
 }
 
@@ -63,6 +63,7 @@ export default function WatchesPage() {
             <Price product={product} />
             <BuyButton productId={product.id} />
           </div>
+          <p className="mt-4 text-sm text-ash" data-reveal>{availability.long}</p>
           <a href="#specs" className="ulink mt-6 inline-flex items-center gap-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" data-reveal>
             Full specifications <span className="text-ember" aria-hidden="true">↓</span>
           </a>
@@ -107,8 +108,8 @@ export default function WatchesPage() {
         </div>
       </section>
 
-      <div className="mt-16"><Marquee words={['Give $35', 'Get the watch', 'Special offer']} /></div>
-      <OfferFeature />
+      <div className="mt-16"><Marquee words={['Fair price', 'No monthly fee', 'Peace of mind']} /></div>
+      <PriceCompare product={product} />
       <StickyCta />
     </>
   )

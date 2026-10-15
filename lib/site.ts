@@ -1,4 +1,4 @@
-// Single source of truth for brand, contact and offer copy.
+// Single source of truth for brand, contact and availability copy.
 export const site = {
   name: 'Affordable Smart Watches',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
@@ -26,25 +26,30 @@ export const site = {
 export const nav = [
   { href: '/', label: 'Home' },
   { href: '/watches', label: 'Watches' },
-  { href: '/offer', label: 'Offers' },
+  { href: '/compare', label: 'Compare' },
   { href: '/story', label: 'Story' },
   { href: '/contact', label: 'Contact' },
 ]
 
-export const offer = {
-  donation: 35,
-  charity: 'TheUrbanSurvivor.org',
-  charityHref: 'https://theurbansurvivor.org',
-  summary:
-    'Make a $35 USD donation to TheUrbanSurvivor.org, cover shipping and handling, and receive the featured smart watch at no additional product cost.',
-  // Set NEXT_PUBLIC_OFFER_URL once the donation workflow is confirmed; until then claims are sent as enquiries.
-  claimUrl: process.env.NEXT_PUBLIC_OFFER_URL || null,
+// The VL16 Pro is sold to US customers only. Checkout enforces this twice (lib/payments.ts):
+// the buyer's IP country (Vercel geo header) and a US shipping address.
+export const availability = {
+  short: 'US customers only',
+  long: 'Available to customers in the United States only. We ship to US addresses only. Orders from Canada and other countries can’t be accepted.',
 }
 
-// Countries the store ships to (ISO codes, as Stripe requires). Add more as needed.
-export const shipCountries: [code: string, label: string][] = [
-  ['US', 'United States'],
-  ['CA', 'Canada'],
+// Ship-to states (50 states + DC). Country is fixed to US.
+export const usStates: [code: string, label: string][] = [
+  ['AL', 'Alabama'], ['AK', 'Alaska'], ['AZ', 'Arizona'], ['AR', 'Arkansas'], ['CA', 'California'], ['CO', 'Colorado'],
+  ['CT', 'Connecticut'], ['DE', 'Delaware'], ['DC', 'District of Columbia'], ['FL', 'Florida'], ['GA', 'Georgia'],
+  ['HI', 'Hawaii'], ['ID', 'Idaho'], ['IL', 'Illinois'], ['IN', 'Indiana'], ['IA', 'Iowa'], ['KS', 'Kansas'],
+  ['KY', 'Kentucky'], ['LA', 'Louisiana'], ['ME', 'Maine'], ['MD', 'Maryland'], ['MA', 'Massachusetts'],
+  ['MI', 'Michigan'], ['MN', 'Minnesota'], ['MS', 'Mississippi'], ['MO', 'Missouri'], ['MT', 'Montana'],
+  ['NE', 'Nebraska'], ['NV', 'Nevada'], ['NH', 'New Hampshire'], ['NJ', 'New Jersey'], ['NM', 'New Mexico'],
+  ['NY', 'New York'], ['NC', 'North Carolina'], ['ND', 'North Dakota'], ['OH', 'Ohio'], ['OK', 'Oklahoma'],
+  ['OR', 'Oregon'], ['PA', 'Pennsylvania'], ['RI', 'Rhode Island'], ['SC', 'South Carolina'], ['SD', 'South Dakota'],
+  ['TN', 'Tennessee'], ['TX', 'Texas'], ['UT', 'Utah'], ['VT', 'Vermont'], ['VA', 'Virginia'], ['WA', 'Washington'],
+  ['WV', 'West Virginia'], ['WI', 'Wisconsin'], ['WY', 'Wyoming'],
 ]
 
 export const legal = {

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createCheckout, parseOrder, paymentsBlocked } from '@/lib/payments'
+import { blockedCountry, createCheckout, parseOrder, paymentsBlocked, US_ONLY_MESSAGE } from '@/lib/payments'
 
 export async function POST(req: Request) {
+  const country = blockedCountry(req.headers)
+  if (country) {
+    console.warn('[checkout] geoblocked:', country)
+    return NextResponse.json({ error: US_ONLY_MESSAGE }, { status: 403 })
+  }
+
   const order = parseOrder(await req.json().catch(() => null))
   if (typeof order === 'string') return NextResponse.json({ error: order }, { status: 400 })
 

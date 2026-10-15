@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { features, featureTable, highlights, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
-import { offer, site } from '@/lib/site'
+import { comparison, comparisonChecked, features, featureTable, highlights, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
+import { availability, site } from '@/lib/site'
 import { LoopVideo, UsTime } from './hero'
-import { BuyButton, ClaimButton, ProductVisual } from './order'
+import { BuyButton, ProductVisual } from './order'
 
 const Arrow = () => <span className="btn-arrow" aria-hidden="true">→</span>
 
@@ -11,6 +11,7 @@ export function Price({ product, className = '' }: { product: Product; className
     <p className={`flex flex-wrap items-baseline gap-x-2 gap-y-1 ${className}`}>
       <span className="text-xl font-semibold tabular-nums">{money(product.priceCents)}</span>
       <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-ash">USD{!PRICING_CONFIRMED && ' · provisional'}</span>
+      <UsOnlyBadge />
       {product.soldOut && <SoldOutBadge />}
     </p>
   )
@@ -19,6 +20,39 @@ export function Price({ product, className = '' }: { product: Product; className
 export const SoldOutBadge = () => (
   <span className="border border-ember px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-ember">Sold out</span>
 )
+
+export const UsOnlyBadge = () => (
+  <span className="inline-flex items-center gap-1.5 border border-line-strong px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-bone">
+    <span className="size-1.5 rounded-full bg-violet" aria-hidden="true" />
+    {availability.short}
+  </span>
+)
+
+// 24-point starburst, alternating outer/inner radius, in a -100..100 viewBox.
+const BURST = Array.from({ length: 48 }, (_, i) => {
+  const r = i % 2 ? 86 : 100
+  const a = (i * Math.PI) / 24
+  return `${(Math.sin(a) * r).toFixed(1)},${(-Math.cos(a) * r).toFixed(1)}`
+}).join(' ')
+
+/* Price in an ember starburst (hero). */
+export function PriceBurst({ product }: { product: Product }) {
+  return (
+    <p className="relative grid size-40 shrink-0 -rotate-6 place-items-center sm:size-44" aria-label={`Only ${money(product.priceCents)} US dollars`}>
+      <svg viewBox="-100 -100 200 200" className="absolute inset-0 size-full drop-shadow-[0_18px_40px_rgb(224_109_52/0.45)] motion-safe:animate-[spin_60s_linear_infinite]" aria-hidden="true">
+        <polygon points={BURST} fill="#E06D34" />
+      </svg>
+      <svg viewBox="-100 -100 200 200" className="absolute inset-0 size-full" aria-hidden="true">
+        <circle r="72" fill="none" stroke="#080808" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="1.5 3" />
+      </svg>
+      <span className="relative grid justify-items-center text-ink" aria-hidden="true">
+        <span className="-skew-x-6 bg-violet px-2 py-0.5 text-[0.625rem] font-extrabold uppercase italic tracking-[0.14em] text-white">Only</span>
+        <span className="font-price mt-1 text-[3.9rem] leading-[0.95] sm:text-[4.4rem]">{money(product.priceCents)}</span>
+        <span className="text-[0.625rem] font-bold uppercase tracking-[0.28em]">USD</span>
+      </span>
+    </p>
+  )
+}
 
 /* ---------------- Hero (orange design merged with the client's VL16 Pro banner) ---------------- */
 // Feature row from the client's VL16 Pro banner.
@@ -54,16 +88,17 @@ export function Hero({ product = products[0] }: { product?: Product }) {
                 </li>
               ))}
             </ul>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4" data-reveal data-delay="0.5">
-              <p className="flex items-baseline gap-2" aria-label={`Only ${money(product.priceCents)} US dollars`}>
-                <span className="-skew-x-6 bg-violet px-2 py-0.5 text-xs font-extrabold uppercase italic tracking-[0.12em] text-white">Only</span>
-                <span className="mega text-[clamp(2.6rem,4vw,3.6rem)]">{money(product.priceCents)}</span>
-                <span className="text-xs font-semibold text-ash">USD</span>
-                {product.soldOut && <SoldOutBadge />}
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <BuyButton productId={product.id} />
-                <Link href="/watches" className="btn btn-ghost" data-magnetic>See the watch</Link>
+            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-6" data-reveal data-delay="0.5">
+              <PriceBurst product={product} />
+              <div className="grid gap-4">
+                <p className="flex flex-wrap items-center gap-2">
+                  <UsOnlyBadge />
+                  {product.soldOut && <SoldOutBadge />}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <BuyButton productId={product.id} />
+                  <Link href="/watches" className="btn btn-ghost" data-magnetic>See the watch</Link>
+                </div>
               </div>
             </div>
           </div>
@@ -345,36 +380,80 @@ export function ImageStory() {
   )
 }
 
-/* ---------------- Special offer ---------------- */
-export function OfferFeature({ detailed = false }: { detailed?: boolean }) {
+/* ---------------- Price comparison ---------------- */
+const dollars = (v: string) => Number(v.replace(/[^\d.]/g, ''))
+
+export function PriceCompare({ product = products[0] }: { product?: Product }) {
+  const total = comparison.rows.find((r) => r.total)!.values.map(dollars)
   return (
-    <section className="relative isolate overflow-hidden bg-ember text-ink" aria-labelledby="offer-title">
-      <p aria-hidden="true" className="mega pointer-events-none absolute -right-[4vw] -top-[4vw] select-none text-[34vw] leading-none text-ink/[0.07]" data-speed="0.2">$35</p>
-      <div className="wrap grid gap-14 py-24 lg:grid-cols-12 lg:py-36">
+    <section className="wrap py-24 lg:py-32" aria-labelledby="compare-title">
+      <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-7">
-          <p className="inline-flex items-center gap-3 text-[0.6875rem] font-bold uppercase tracking-[0.28em]">
-            <span className="h-px w-7 bg-ink" /> Special offer
-          </p>
-          <h2 id="offer-title" className="mt-8">
-            <span data-split className="mega block text-[clamp(3.8rem,10vw,10.5rem)]">Give ${offer.donation}.</span>
-            <span data-split data-delay="0.12" className="display block text-[clamp(3.4rem,9vw,9.5rem)] italic">Get the watch.</span>
+          <p className="eyebrow" data-reveal="fade">Compare prices · US market</p>
+          <h2 id="compare-title" data-split className="display mt-6 text-[clamp(2.6rem,5vw,5rem)]">
+            The same peace of mind, <span className="italic text-ember">for less.</span>
           </h2>
         </div>
-        <div className="grid content-end gap-8 lg:col-span-5">
-          <p className="text-lg leading-relaxed" data-reveal>{offer.summary}</p>
-          <ol className="grid border-t border-ink/25" data-stagger>
-            {[`Donate $${offer.donation} USD to ${offer.charity}`, 'Pay the applicable shipping and handling', 'Receive the featured smart watch'].map((s, i) => (
-              <li key={s} className="flex gap-5 border-b border-ink/25 py-4 text-sm font-semibold">
-                <span className="tabular-nums opacity-60">0{i + 1}</span>{s}
-              </li>
+        <p className="max-w-md text-ash lg:col-span-5 lg:justify-self-end" data-reveal>
+          What a fall-alert watch really costs in its first year in the US. The {product.model} has no monthly service fee.
+          You only add your own SIM plan.
+        </p>
+      </div>
+
+      <div className="overflow-x-auto border border-line" data-reveal>
+        <table className="w-full min-w-[46rem] border-collapse text-left text-sm">
+          <caption className="sr-only">First-year cost and features of the {product.name} compared with similar watches sold in the US</caption>
+          <thead>
+            <tr className="border-b border-line">
+              <th scope="col" className="w-[28%] p-5 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash">Compared</th>
+              {comparison.watches.map((w, i) => (
+                <th key={w} scope="col" className={`p-5 align-bottom ${i ? 'font-semibold text-bone' : 'bg-ember/10 shadow-[inset_0_3px_0_var(--color-ember)]'}`}>
+                  {i ? w : (
+                    <span className="grid gap-1">
+                      <span className="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-ember">Our pick</span>
+                      <span className="display text-3xl">{w}</span>
+                    </span>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {comparison.rows.map((r) => (
+              <tr key={r.label} className={`border-b border-line last:border-b-0 ${r.total ? 'bg-ink-2/80' : ''}`}>
+                <th scope="row" className={`p-5 font-normal ${r.total ? 'font-semibold text-bone' : 'text-ash'}`}>{r.label}</th>
+                {r.values.map((v, i) => (
+                  <td key={i} className={`p-5 tabular-nums ${i ? 'text-bone/85' : 'bg-ember/10 font-semibold text-bone'}`}>
+                    {r.total ? <span className={`font-price text-[2rem] leading-none ${i ? 'text-bone/70' : 'text-ember'}`}>{v}</span> : v}
+                  </td>
+                ))}
+              </tr>
             ))}
-          </ol>
-          <div className="flex flex-wrap gap-3" data-reveal>
-            <ClaimButton className="btn btn-dark" />
-            {!detailed && <Link href="/offer" className="btn btn-ghost !text-ink ![box-shadow:inset_0_0_0_1px_rgb(8_8_8/0.4)] hover:!text-ember">Offer details</Link>}
-          </div>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-6" data-reveal>
+        <ul className="flex flex-wrap gap-x-8 gap-y-2 text-sm font-semibold">
+          {comparison.watches.slice(1).map((w, i) => (
+            <li key={w}>
+              Save <span className="font-price text-xl text-ember">{money((total[i + 1] - total[0]) * 100)}</span>{' '}
+              <span className="font-normal text-ash">in year one vs {w}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex flex-wrap gap-3">
+          <BuyButton productId={product.id} />
+          <Link href="/watches#specs" className="btn btn-ghost">Full specs</Link>
         </div>
       </div>
+
+      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-ash">
+        Competitor prices are US list prices from public sources, checked {comparisonChecked}, and may change. Cellular and SIM plans
+        are not included for any watch. The {product.model} sends alerts to your family; it does not include a professional monitoring
+        centre. Apple Watch is a trademark of Apple Inc. and Bay Alarm Medical is a trademark of its owner; brands are named for
+        comparison only and are not affiliated with {site.name}.
+      </p>
     </section>
   )
 }

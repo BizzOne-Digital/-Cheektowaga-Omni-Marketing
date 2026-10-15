@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { notify } from '@/lib/notify'
 
-// Forwards enquiries (contact form + offer claims) to CONTACT_WEBHOOK_URL
+// Forwards enquiries (contact form) to CONTACT_WEBHOOK_URL
 // (e.g. Formspree, Zapier, Make). Without it the form reports it is not connected.
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

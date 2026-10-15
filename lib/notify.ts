@@ -1,7 +1,7 @@
 import 'server-only'
 
 // Sends a JSON payload to CONTACT_WEBHOOK_URL (Formspree, Zapier, Make, own API).
-// Used by the contact form, offer claims and Stripe paid-order alerts.
+// Used by the contact form and Stripe paid-order alerts.
 export async function notify(payload: Record<string, unknown>): Promise<'sent' | 'not_configured' | 'failed'> {
   const hook = process.env.CONTACT_WEBHOOK_URL
   if (!hook) return 'not_configured'

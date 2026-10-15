@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Instrument_Serif, Manrope } from 'next/font/google'
+import { Anton, Instrument_Serif, Manrope } from 'next/font/google'
 import { BgStage } from '@/components/bg-stage'
 import { Cursor } from '@/components/cursor'
 import { Footer } from '@/components/footer'
@@ -14,6 +14,8 @@ import './globals.css'
 
 const serif = Instrument_Serif({ subsets: ['latin'], weight: '400', style: ['normal', 'italic'], variable: '--font-serif', display: 'swap' })
 const sans = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' })
+// Condensed poster face, used only for prices (font-price).
+const price = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton', display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -40,7 +42,7 @@ const boot = `(function(d){try{if(!matchMedia('(prefers-reduced-motion: reduce)'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${price.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: boot }} />
       </head>

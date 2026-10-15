@@ -1,12 +1,12 @@
 import 'server-only'
 import Stripe from 'stripe'
 import { getProduct, money, PRICING_CONFIRMED } from './products'
-import { shipCountries, site } from './site'
+import { site, usStates } from './site'
 
 // Payment provider boundary. To swap Stripe for another processor, replace the bodies
 // below — the API routes and UI only use these exports.
 
-export type Customer = { name: string; email: string; phone: string; address: string; city: string; postal: string; country: string }
+export type Customer = { name: string; email: string; phone: string; address: string; city: string; state: string; postal: string; country: string }
 export type OrderInput = { productId: string; quantity: number; customer: Customer }
 
 const key = process.env.STRIPE_SECRET_KEY?.trim()
@@ -38,23 +38,38 @@ export function paymentsBlocked(): string | null {
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const COUNTRIES = new Set(shipCountries.map(([code]) => code))
+const STATES = new Set(usStates.map(([code]) => code))
+const ZIP = /^\d{5}(-\d{4})?$/
+export const US_ONLY_MESSAGE = 'Sorry, the VL16 Pro is only available to customers in the United States.'
+
+/**
+ * Geoblock: Vercel sets x-vercel-ip-country on every request. Anything other than US is refused.
+ * The header is absent in local dev, so local checkout still works.
+ */
+// ponytail: IP geo can be bypassed with a VPN; the US-only shipping address check below is the hard stop.
+export function blockedCountry(headers: Headers): string | null {
+  const country = headers.get('x-vercel-ip-country')?.toUpperCase()
+  return country && country !== 'US' ? country : null
+}
 
 // Never trust the client: price always comes from the server-side catalog.
 export function parseOrder(body: unknown): OrderInput | string {
   const b = body as Partial<OrderInput> | null
   const product = b?.productId ? getProduct(b.productId) : undefined
   if (!product) return 'Unknown product.'
-  if (product.soldOut) return `${product.name} is sold out.`
   const quantity = Number(b?.quantity)
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) return 'Quantity must be between 1 and 10.'
   const c = b?.customer ?? ({} as Customer)
-  const fields = ['name', 'email', 'phone', 'address', 'city', 'postal', 'country'] as const
+  const fields = ['name', 'email', 'phone', 'address', 'city', 'state', 'postal', 'country'] as const
   for (const f of fields) if (typeof c[f] !== 'string' || !c[f].trim() || c[f].length > 200) return `Missing ${f}.`
   if (!EMAIL.test(c.email)) return 'Invalid email.'
-  if (!COUNTRIES.has(c.country.trim().toUpperCase())) return 'We don’t ship to that country yet.'
+  if (c.country.trim().toUpperCase() !== 'US') return 'We only ship to addresses in the United States.'
+  if (!STATES.has(c.state.trim().toUpperCase())) return 'Choose a US state.'
+  if (!ZIP.test(c.postal.trim())) return 'Enter a valid US ZIP code (e.g. 10001).'
+  if (product.soldOut) return `${product.name} is sold out.`
   const customer = Object.fromEntries(fields.map((f) => [f, c[f].trim()])) as Customer
-  customer.country = customer.country.toUpperCase()
+  customer.country = 'US'
+  customer.state = customer.state.toUpperCase()
   return { productId: product.id, quantity, customer }
 }
 
@@ -72,6 +87,7 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
     customer_phone: customer.phone,
     ship_line1: customer.address,
     ship_city: customer.city,
+    ship_state: customer.state,
     ship_postal: customer.postal,
     ship_country: customer.country,
   }
@@ -98,7 +114,7 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
       shipping: {
         name: customer.name,
         phone: customer.phone,
-        address: { line1: customer.address, city: customer.city, postal_code: customer.postal, country: customer.country },
+        address: { line1: customer.address, city: customer.city, state: customer.state, postal_code: customer.postal, country: customer.country },
       },
       metadata,
     },
@@ -138,7 +154,7 @@ export function describeSession(s: Stripe.Checkout.Session) {
     `${product ? `${product.name} — ${product.finish}` : s.metadata?.product_id} × ${s.metadata?.quantity ?? '?'}`,
     `Total paid: ${money(s.amount_total ?? 0)} ${s.currency?.toUpperCase() ?? ''}`,
     `Customer: ${s.metadata?.customer_name ?? s.customer_details?.name ?? ''} · ${s.customer_details?.email ?? s.customer_email ?? ''} · ${s.metadata?.customer_phone ?? ''}`,
-    `Ship to: ${[m.ship_line1, m.ship_city, m.ship_postal, m.ship_country].filter(Boolean).join(', ')}`,
+    `Ship to: ${[m.ship_line1, m.ship_city, m.ship_state, m.ship_postal, m.ship_country].filter(Boolean).join(', ')}`,
     `Stripe session: ${s.id}`,
   ].join('\n')
 }
