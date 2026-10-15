@@ -2,9 +2,10 @@
 export const site = {
   name: 'Affordable Smart Watches',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  title: 'Affordable Smart Watches | VL16 Pro 4G Safety Smartwatch',
+  title: 'Affordable Elder Care Smartwatches for Seniors | VL16 Pro 4G GPS & SOS',
   description:
-    'Shop the VL16 Pro Smartwatch from Affordable Smart Watches: 4G calling, GPS location tracking, heart-rate monitoring, fall alerts and one-touch SOS that helps seniors stay independent and families stay reassured.',
+    'Affordable elder care smartwatches for seniors. Give your parent or grandparent the VL16 Pro: 4G calling, GPS location tracking, fall alerts, heart-rate monitoring and one-touch SOS, with no monthly fee. Peace of mind for families.',
+  keywords: ['elder care smartwatch', 'smartwatch for seniors', 'senior GPS watch', 'fall detection watch for elderly', 'SOS watch for elderly parents', 'medical alert watch', 'affordable elder care watch', 'GPS tracker for elderly'],
   // Brand line from the client's earlier banner on affordablesmartwatches.com.
   tagline: 'More connectivity. More freedom.',
   pillars: ['Stay connected.', 'Live healthier.', 'Do more.'],

@@ -74,8 +74,9 @@ export function Hero({ product = products[0] }: { product?: Product }) {
             <p className="eyebrow" data-reveal="fade">VL16 Pro · Affordable smart watch</p>
             <h1 id="hero-title" className="mt-8">
               <span data-split className="mega block w-max whitespace-nowrap text-[clamp(2.6rem,15vw,5rem)] lg:text-[clamp(3.4rem,8.4vw,9.5rem)]">Affordable</span>{' '}
+              <span data-split data-delay="0.08" className="mega block w-max whitespace-nowrap text-[clamp(2.6rem,15vw,5rem)] lg:text-[clamp(3.4rem,8.4vw,9.5rem)]">Elder Care</span>{' '}
               <span data-split data-delay="0.15" className="display block w-max whitespace-nowrap pl-[0.06em] text-[clamp(2.5rem,14vw,4.8rem)] lg:text-[clamp(3.2rem,8vw,9rem)] italic text-ember-soft">
-                smart watches.
+                smartwatches.
               </span>
             </h1>
             <p className="mt-8 text-[clamp(1.25rem,2vw,1.6rem)] font-semibold" data-reveal data-delay="0.3">
