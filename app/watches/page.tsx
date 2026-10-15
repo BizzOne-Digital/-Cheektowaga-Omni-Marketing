@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: { images: [{ url: product.images[0].src, alt: product.images[0].alt }] },
 }
 
-// Product schema carries only facts we have (no ratings, reviews or availability claims).
+// Product schema carries only facts we have (no ratings or reviews).
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': products.map((p) => ({
@@ -26,7 +26,7 @@ const jsonLd = {
     description: p.description,
     image: p.images.map((i) => `${site.url}${i.src}`),
     brand: { '@type': 'Brand', name: site.name },
-    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), url: `${site.url}/watches` } } : {}),
+    ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), url: `${site.url}/watches`, ...(p.soldOut && { availability: 'https://schema.org/SoldOut' }) } } : {}),
   })),
 }
 
@@ -38,7 +38,7 @@ export default function WatchesPage() {
         <p className="eyebrow" data-reveal="fade">{product.name} · {product.model}</p>
         <h1 className="mt-8" aria-label={product.heading}>
           <span data-split className="mega block text-[clamp(2.8rem,7.5vw,8rem)]">Peace of mind on your wrist:</span>
-          <span data-split data-delay="0.12" className="display mt-2 block text-[clamp(2.4rem,6vw,6.5rem)] italic text-ember">The L16 Pro Smartwatch</span>
+          <span data-split data-delay="0.12" className="display mt-2 block text-[clamp(2.4rem,6vw,6.5rem)] italic text-ember">The VL16 Pro Smartwatch</span>
         </h1>
         <p className="mt-10 max-w-2xl text-lg leading-relaxed text-ash" data-reveal data-delay="0.3">{product.description}</p>
       </header>
@@ -77,7 +77,7 @@ export default function WatchesPage() {
             <h2 id="video-title" data-split className="display text-[clamp(2.4rem,4.6vw,4.6rem)]">
               See it <span className="italic text-ember">in action.</span>
             </h2>
-            <p className="max-w-sm text-sm text-ash" data-reveal>SIM setup, fitting, the SOS key and the main screens, in about a minute.</p>
+            <p className="max-w-sm text-sm text-ash" data-reveal>The VL16 Pro, its main screens and features, in 30 seconds.</p>
           </div>
           <div className="overflow-hidden border border-line-strong bg-white" data-reveal="mask">
             <video src={product.video} controls muted playsInline preload="metadata" className="aspect-video w-full" aria-label={`${product.name} product video (no sound)`} />

@@ -13,10 +13,11 @@ Use pnpm (the project's lockfile). Add packages with `corepack pnpm add <pkg>` s
 
 | What | Where |
 |------|-------|
-| Product (L16 Pro Smartwatch, **$99**), client-approved heading and copy, specs, SIM/health note | `lib/products.ts`. Specs follow the Toptraking L16PRO 4G listing, reworded. Add objects to `products` to sell more models. |
-| Product photos — **TEMPORARY** | `public/media/l16/photo-1..7.jpg` (Toptraking gallery, white background). Replace with the client's own photos when they arrive: overwrite the files or edit `images` in `lib/products.ts`. |
-| Product video | `public/media/l16-pro.mp4` (client's L16 Pro video from affordablesmartwatches.com, re-encoded, no audio). Plays in the hero card and on the Watches page. |
-| Promo banner | `public/media/l16-pro-banner.webp` (client's banner). Shows below the hero, links to /watches. It has the price ($99) baked in, so replace it if the price changes. |
+| Product (VL16 Pro Smartwatch, **$125**), client-approved heading and copy, specs, SIM/health note | `lib/products.ts`. Specs follow the manufacturer's VL16 Pro spec sheet (Shenzhen Vivistar / Alibaba listing), reworded. Add objects to `products` to sell more models. |
+| Product photos | `public/media/vl16/photo-1..22.jpg` (from the manufacturer's VL16 Pro Alibaba listing). All show in the Watches page gallery. Replace with the client's own photos when they arrive: overwrite the files or edit `images` in `lib/products.ts`. |
+| Sold out | `soldOut: true` on the product in `lib/products.ts`. Buy buttons show **SOLD OUT** and `/api/checkout` refuses the order. Set to `false` (or remove) when stock arrives. |
+| Product video | `public/media/vl16-pro.mp4` (VL16 Pro video from the manufacturer's Alibaba listing, re-encoded, no audio). Plays in the hero card and on the Watches page. |
+| Promo banner | `public/media/vl16-pro-banner.webp` (client's VL16 Pro banner, from `public/media/banner.jpeg`). Shows below the hero, links to /watches. It has the price ($125) baked in, so replace it if the price changes. |
 | Brand copy, contact details, story | `lib/site.ts` (`about`, `tagline`, `pillars`, `contact`), `app/story/page.tsx`. Client to supply final store/contact wording. |
 | Policies | `app/legal/[slug]/page.tsx` (Privacy, Terms, Shipping, Returns). |
 | Ship-to countries | `shipCountries` in `lib/site.ts` (currently US, Canada). |
@@ -25,7 +26,7 @@ Use pnpm (the project's lockfile). Add packages with `corepack pnpm add <pkg>` s
 
 | Item | Where | Status |
 |------|-------|--------|
-| Price | `priceCents` in `lib/products.ts` (9900 = $99.00). Also baked into the promo banner image. | Set |
+| Price | `priceCents` in `lib/products.ts` (12500 = $125.00). Also baked into the promo banner image. | Set |
 | Price lock | `PRICING_CONFIRMED` — live checkout is refused while `false`. | `true` |
 | Shipping | Create a Shipping Rate in Stripe, set `STRIPE_SHIPPING_RATE_ID`. Until then the order panel says "To be confirmed" and no shipping is charged. | Waiting for rate |
 | Sales tax | Set up Stripe → Tax (origin address + registrations), then `STRIPE_AUTOMATIC_TAX=true`. Prices become tax-exclusive and the order panel shows "Sales tax: calculated at checkout". | Off until set up |

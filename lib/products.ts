@@ -1,6 +1,8 @@
-// Catalog. Specs follow the Toptraking L16PRO 4G listing (toptraking.com/product/l16pro-4g-senior-care-tracking-watch),
-// reworded. Where that listing contradicts itself (location history 90 vs 30 days) no number is stated.
-// TEMPORARY PHOTOS: public/media/l16/photo-1..7.jpg are stand-ins until the client's own product photos arrive.
+// Catalog. Specs follow the Alibaba listing's key attributes (Vivistar "4G GPS elderly smart watch VL16P",
+// alibaba.com/product-detail/4G-Smart-Watch-Phone-VL16-Alert_1600177032079.html); where the listing is silent
+// (bands, size, weight, app, box) the manufacturer's VL16 Pro spec sheet fills in. Banner, name and price follow
+// affordablesmartwatches.com.
+// Photos: public/media/vl16/photo-1..22.jpg and video public/media/vl16-pro.mp4, from the manufacturer's Alibaba listing.
 // Swap the files (or the src values below) — every page reads images from here.
 export type Product = {
   id: string
@@ -14,6 +16,7 @@ export type Product = {
   priceCents: number
   images: { src: string; alt: string }[] // first image is the main one
   video?: string
+  soldOut?: boolean // true: Buy buttons show SOLD OUT and checkout refuses the order
 }
 
 // Prices are final; while false the UI flags pricing as provisional and live checkout is blocked.
@@ -21,25 +24,41 @@ export const PRICING_CONFIRMED = true
 
 export const products: Product[] = [
   {
-    id: 'l16-pro',
-    name: 'L16 Pro Smartwatch',
-    model: 'L16 PRO',
+    id: 'vl16-pro',
+    name: 'VL16 Pro Smartwatch',
+    model: 'VL16 PRO',
     finish: 'Black',
     swatch: '#151515',
-    heading: 'Peace of Mind on Your Wrist: The L16 Pro Smartwatch',
+    heading: 'Peace of Mind on Your Wrist: The VL16 Pro Smartwatch',
     line: 'Peace of mind on your wrist.',
     description:
-      'A 4G safety smartwatch with GPS location tracking, fall alerts and a one-touch SOS button that notifies family, helping seniors stay independent and caregivers stay reassured.',
-    priceCents: 9900,
-    video: '/media/l16-pro.mp4',
+      'A 4G safety smartwatch with GPS location tracking, fall alerts, heart-rate and health monitoring, and a one-touch SOS that notifies family, helping seniors stay independent and caregivers stay reassured.',
+    priceCents: 12500,
+    soldOut: true,
+    video: '/media/vl16-pro.mp4',
     images: [
-      { src: '/media/l16/photo-1.jpg', alt: 'L16 Pro Smartwatch in black with the orange SOS button, front three-quarter view' },
-      { src: '/media/l16/photo-3.jpg', alt: 'L16 Pro Smartwatch face showing time, steps and signal' },
-      { src: '/media/l16/photo-4.jpg', alt: 'L16 Pro Smartwatch showing the SOS alert screen' },
-      { src: '/media/l16/photo-5.jpg', alt: 'L16 Pro Smartwatch measuring heart rate, strap open' },
-      { src: '/media/l16/photo-6.jpg', alt: 'L16 Pro Smartwatch heart-rate screen, side view' },
-      { src: '/media/l16/photo-7.jpg', alt: 'L16 Pro Smartwatch with strap open, clock screen' },
-      { src: '/media/l16/photo-2.jpg', alt: 'Back of the L16 Pro Smartwatch showing the health sensors and magnetic charging pins' },
+      { src: '/media/vl16/photo-1.jpg', alt: 'Two VL16 Pro Smartwatches in black, one showing the clock and one the heart-rate screen' },
+      { src: '/media/vl16/photo-2.jpg', alt: 'VL16 Pro Smartwatch in black with the heart key, clock screen showing time, steps and signal' },
+      { src: '/media/vl16/photo-3.jpg', alt: 'VL16 Pro Smartwatch showing the SOS alert screen after a fall' },
+      { src: '/media/vl16/photo-4.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back' },
+      { src: '/media/vl16/photo-5.jpg', alt: 'Back of the VL16 Pro Smartwatch showing the heart-rate, SpO2 and temperature sensors' },
+      { src: '/media/vl16/photo-6.jpg', alt: 'VL16 Pro Smartwatch showing the temperature screen' },
+      { src: '/media/vl16/photo-7.jpg', alt: 'Senior checking the VL16 Pro Smartwatch on their wrist' },
+      { src: '/media/vl16/photo-8.jpg', alt: 'VL16 Pro Smartwatch in red and white, with sleep and clock screens' },
+      { src: '/media/vl16/photo-9.jpg', alt: 'VL16 Pro Smartwatch showing heart rate, SpO2 and blood pressure' },
+      { src: '/media/vl16/photo-10.jpg', alt: 'VL16 Pro Smartwatch with water splash, waterproof design' },
+      { src: '/media/vl16/photo-11.jpg', alt: 'VL16 Pro Smartwatch SOS call screen: hold for 3 seconds to call an emergency contact' },
+      { src: '/media/vl16/photo-12.jpg', alt: 'Senior checking health readings on the VL16 Pro Smartwatch' },
+      { src: '/media/vl16/photo-13.jpg', alt: 'VL16 Pro Smartwatch location screen with emergency positioning on a map' },
+      { src: '/media/vl16/photo-14.jpg', alt: 'VL16 Pro Smartwatch medication reminder: time to take medicine' },
+      { src: '/media/vl16/photo-15.jpg', alt: 'VL16 Pro Smartwatch side view, heart-rate monitoring' },
+      { src: '/media/vl16/photo-16.jpg', alt: 'VL16 Pro Smartwatch on its magnetic charging dock with USB-C socket' },
+      { src: '/media/vl16/photo-17.jpg', alt: 'VL16 Pro Smartwatch health screen: heart rate, blood pressure, SpO2 and temperature' },
+      { src: '/media/vl16/photo-18.jpg', alt: 'VL16 Pro Smartwatch with the family app: safe zones and location history' },
+      { src: '/media/vl16/photo-19.jpg', alt: 'VL16 Pro Smartwatches in their gift boxes, with the SOS screen' },
+      { src: '/media/vl16/photo-20.jpg', alt: 'VL16 Pro Smartwatch temperature screen, black and white models' },
+      { src: '/media/vl16/photo-21.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back with feature icons' },
+      { src: '/media/vl16/photo-22.jpg', alt: 'VL16 Pro Smartwatch: 2G, 3G, 4G and Wi-Fi global roaming' },
     ],
   },
 ]
@@ -54,7 +73,7 @@ export const money = (cents: number) =>
 export const highlights = [
   {
     title: 'Independence, with a safety net',
-    text: 'The L16 Pro runs on its own 4G connection with a nano-SIM, so the wearer can get out and about without carrying a phone, and help is always one button away.',
+    text: 'The VL16 Pro runs on its own 4G connection with a nano-SIM, so the wearer can get out and about without carrying a phone, and help is always one button away.',
   },
   {
     title: 'GPS location tracking',
@@ -66,7 +85,7 @@ export const highlights = [
   },
   {
     title: 'Emergency contact notifications',
-    text: 'One press of the orange SOS key raises an emergency alert. SOS, safe-zone and low-battery alarms go to the family app, and two-way calling lets them talk straight away.',
+    text: 'Press and hold the SOS key to call up to three emergency contacts. SOS, safe-zone and low-battery alarms go to the family app, and two-way calling lets them talk straight away.',
   },
   {
     title: 'Peace of mind for family and caregivers',
@@ -76,55 +95,62 @@ export const highlights = [
 
 // Short feature panels (home page rail).
 export const features = [
-  { stat: 'SOS', title: 'One-touch SOS', text: 'Press the orange key to send an emergency alert to family.' },
+  { stat: 'SOS', title: 'One-touch SOS', text: 'Press and hold the SOS key to call your emergency contacts.' },
   { stat: 'GPS', title: 'Location tracking', text: 'Live location, location history and safe-zone alerts in the app.' },
   { stat: 'Fall', title: 'Fall alerts', text: 'Detects a fall and raises an alarm automatically.' },
   { stat: 'Alert', title: 'Family notifications', text: 'SOS, safe-zone and low-battery alarms go straight to the app.' },
   { stat: 'Call', title: 'Two-way calling', text: 'Talk directly through the watch over its own 4G connection.' },
   { stat: 'HR', title: 'Health monitoring', text: 'Heart rate, blood pressure, SpO2 and temperature, plus steps.' },
-  { stat: '4G', title: 'Works on its own', text: '2G, 3G, 4G and Wi-Fi with a nano-SIM. No phone needed nearby.' },
-  { stat: 'IP66', title: 'Everyday tough', text: 'IP66 water resistance and a 680 mAh battery: 4–5 days normal use.' },
+  { stat: '4G', title: 'Works on its own', text: '4G, Wi-Fi and Bluetooth with its own SIM card. No phone needed nearby.' },
+  { stat: 'GPS+', title: 'Accurate location', text: 'GPS, BeiDou, Wi-Fi and LBS positioning work together, indoors and out.' },
+  { stat: 'IP67', title: 'Everyday tough', text: 'IP67 water and dust resistance for everyday splashes and rain.' },
+  { stat: '4 days', title: 'Long battery life', text: '650 mAh battery: up to 4 days per charge.' },
 ]
 
 export const specs: [label: string, value: string][] = [
-  ['Model', 'L16 PRO'],
-  ['Network', '2G GSM 850 / 900 / 1800 / 1900 MHz · 3G WCDMA B1, B8 · 4G LTE B1, B3, B5, B7, B8, B9, B19, B20, B28, B40, B41 · Wi-Fi'],
-  ['SIM', 'Nano-SIM, e-SIM compatible (SIM and data plan not included)'],
-  ['Location', 'GPS, safe-zone (geo-fence) alerts, location history; Bluetooth 5.0 for indoor location'],
-  ['Safety', 'SOS alarm, fall alarm, low-battery alert'],
-  ['Calling', 'Two-way voice calls'],
-  ['Health', 'Heart rate, blood pressure, SpO2 and temperature monitoring; pedometer; medication reminder'],
-  ['Sensors', 'PPG heart-rate and SpO2 sensor, temperature sensor, 3D accelerometer'],
-  ['Display', '1.0″ TFT, 128 × 64'],
-  ['Processor', 'Unisoc W307 (Cortex-A53, 1 GHz) + GR5515 sensor hub, 128 MB RAM, RTOS'],
-  ['Battery', '680 mAh lithium polymer · 3–4 days very frequent use · 4–5 days normal use · 6–7 days 4G standby'],
-  ['Charging', 'Magnetic 2-pin'],
-  ['Water resistance', 'IP66'],
-  ['App', 'Web or mobile app, compatible with Android and iPhone'],
-  ['Materials', 'PC + ABS case, silicone 18 mm sport strap'],
+  ['Model', 'VL16 Pro (VL16P)'],
+  ['Network', '4G LTE B1, B3, B5, B7, B8, B9, B19, B20, B28, B40, B41 · 3G WCDMA B1, B8 · 2G GSM 850 / 900 / 1800 / 1900 MHz · Wi-Fi · Bluetooth'],
+  ['SIM', 'Supports a SIM card (SIM and data plan not included)'],
+  ['Location', 'GPS + BeiDou + Wi-Fi + LBS; safe-zone (geo-fence) alerts and 30-day location history in the app'],
+  ['Safety', 'SOS button, fall alert, low-battery alert'],
+  ['Calling', 'Two-way voice calls, call reminder; hold the SOS key to call up to three emergency contacts'],
+  ['Health & fitness', 'Heart rate, blood pressure, SpO2 and body temperature; fitness and sleep tracking; mood tracker; medication reminder'],
+  ['Other functions', 'Calendar, alarm clock, countdown, chronograph, message reminder and push messages, remote control from the app'],
+  ['Sensors', 'Heart-rate / SpO2 optical sensor, temperature sensor, gyroscope'],
+  ['Display', 'TFT touchscreen, 320 × 240, rectangular'],
+  ['Processor', 'Unisoc SC8521E dual-core 1.3 GHz'],
+  ['Operating system', 'Android'],
+  ['Battery', '650 mAh · up to 4 days'],
+  ['Charging', 'Magnetic charging dock with USB-C socket'],
+  ['Water resistance', 'IP67, dustproof'],
+  ['App', 'Web or mobile app, compatible with Android and iPhone. Alerts: SOS, safe zone, low battery. Data kept for 30 days'],
+  ['Materials', 'Plastic case, silicone strap'],
+  ['Camera', 'None'],
   ['Size & weight', '55 × 31 × 14.8 mm · 40 g'],
   ['Colour', 'Black'],
+  ['In the box', 'VL16 Pro Smartwatch, user manual (English), screwdriver, SIM pin, gift box'],
 ]
 
-// Full feature list from the Toptraking L16PRO listing (Watches page).
+// Full feature list from the Alibaba listing's key attributes (Watches page).
 export const featureTable: [feature: string, detail: string][] = [
   ['SOS alarm', 'Supported'],
   ['Geo-fence alert', 'Automatic alarm when the wearer leaves the set safe zone'],
-  ['GPS positioning', 'Supported'],
-  ['Waterproof', 'IP66'],
+  ['Positioning', 'GPS, BeiDou, Wi-Fi and LBS'],
+  ['Waterproof', 'IP67, dustproof'],
   ['Two-way call', 'Supported'],
   ['Health monitoring', 'Heart rate, blood pressure, SpO2 and temperature'],
   ['Medication reminder', 'Supported'],
   ['Fall alarm', 'Supported'],
-  ['Historical track', 'View location history from the past 90 days'],
-  ['Pedometer', 'Supported'],
-  ['Battery', '680 mAh'],
-  ['Gravity sensor', 'Supported'],
+  ['Historical track', 'View location history from the past 30 days'],
+  ['Pedometer & fitness tracker', 'Supported'],
+  ['Sleep tracker', 'Supported'],
+  ['Battery', '650 mAh, up to 4 days'],
+  ['Gyroscope', 'Supported'],
   ['Dimensions', '55 × 31 × 14.8 mm'],
   ['Weight', '40 g'],
-  ['Screen', '1.0″ TFT, 128 × 64 resolution'],
+  ['Screen', 'TFT touchscreen, 320 × 240 resolution'],
   ['Compatible with Apple & Android', 'Supported'],
 ]
 
 export const healthNote =
-  'SOS, calling and location need an active nano-SIM with a 4G data plan (not included). Health readings are for general wellness reference only; the L16 Pro Smartwatch is not a medical device.'
+  'SOS, calling and location need an active nano-SIM with a 4G data plan (not included). Health readings are for general wellness reference only; the VL16 Pro Smartwatch is not a medical device.'

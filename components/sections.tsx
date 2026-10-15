@@ -11,12 +11,18 @@ export function Price({ product, className = '' }: { product: Product; className
     <p className={`flex flex-wrap items-baseline gap-x-2 gap-y-1 ${className}`}>
       <span className="text-xl font-semibold tabular-nums">{money(product.priceCents)}</span>
       <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-ash">USD{!PRICING_CONFIRMED && ' · provisional'}</span>
+      {product.soldOut && <SoldOutBadge />}
     </p>
   )
 }
 
-/* ---------------- Hero (orange design merged with the client's L16 Pro banner) ---------------- */
-const heroChips = ['4G connectivity', 'Phone calls', 'GPS location', 'Health monitoring']
+export const SoldOutBadge = () => (
+  <span className="border border-ember px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-ember">Sold out</span>
+)
+
+/* ---------------- Hero (orange design merged with the client's VL16 Pro banner) ---------------- */
+// Feature row from the client's VL16 Pro banner.
+const heroChips = ['Heart rate monitoring', 'Fitness tracking', 'Smart notifications', 'Long battery life']
 
 export function Hero({ product = products[0] }: { product?: Product }) {
   return (
@@ -31,7 +37,7 @@ export function Hero({ product = products[0] }: { product?: Product }) {
       <div className="wrap relative grid min-h-[100svh] grid-rows-[1fr_auto] pt-28 lg:pt-32">
         <div className="grid items-center gap-12 lg:grid-cols-12">
           <div className="relative z-10 lg:col-span-7">
-            <p className="eyebrow" data-reveal="fade">L16 Pro · Affordable smart watch</p>
+            <p className="eyebrow" data-reveal="fade">VL16 Pro · Affordable smart watch</p>
             <h1 id="hero-title" className="mt-8">
               <span data-split className="mega block w-max whitespace-nowrap text-[clamp(2.6rem,15vw,5rem)] lg:text-[clamp(3.4rem,8.4vw,9.5rem)]">Affordable</span>{' '}
               <span data-split data-delay="0.15" className="display block w-max whitespace-nowrap pl-[0.06em] text-[clamp(2.5rem,14vw,4.8rem)] lg:text-[clamp(3.2rem,8vw,9rem)] italic text-ember-soft">
@@ -53,6 +59,7 @@ export function Hero({ product = products[0] }: { product?: Product }) {
                 <span className="-skew-x-6 bg-violet px-2 py-0.5 text-xs font-extrabold uppercase italic tracking-[0.12em] text-white">Only</span>
                 <span className="mega text-[clamp(2.6rem,4vw,3.6rem)]">{money(product.priceCents)}</span>
                 <span className="text-xs font-semibold text-ash">USD</span>
+                {product.soldOut && <SoldOutBadge />}
               </p>
               <div className="flex flex-wrap gap-3">
                 <BuyButton productId={product.id} />
@@ -99,9 +106,9 @@ export function PromoBanner({ product = products[0] }: { product?: Product }) {
       <Link href="/watches" className="group block overflow-hidden border border-line transition-colors duration-500 hover:border-ember/60" data-reveal="mask" data-cursor="Shop">
         <img
           src={site.promoBanner}
-          width={1280}
-          height={461}
-          alt={`L16 Pro, affordable smart watch. More connectivity, more freedom: 4G, calls, GPS and health. Only ${money(product.priceCents)} USD. Buy now.`}
+          width={1600}
+          height={576}
+          alt={`VL16 Pro Smartwatch, affordable smart watches. Heart rate monitoring, fitness tracking, smart notifications, long battery life. ${money(product.priceCents)} USD.${product.soldOut ? ' Currently sold out.' : ''}`}
           className="h-auto w-full transition-transform duration-1000 ease-[var(--ease-expo)] group-hover:scale-[1.02]"
           loading="lazy"
         />
@@ -145,7 +152,7 @@ export function Intro() {
           Made for the people <span className="italic text-ember">who matter most.</span>
         </h2>
         <p data-scrub-words className="mt-12 max-w-3xl text-[clamp(1.25rem,2.2vw,2rem)] leading-snug">
-          Staying safe and connected shouldn&rsquo;t cost a fortune. {site.name} brings families well-made 4G safety watches at a fair price, starting with the L16 Pro: help at the press of a button for the wearer, and real peace of mind for everyone who cares about them.
+          Staying safe and connected shouldn&rsquo;t cost a fortune. {site.name} brings families well-made 4G safety watches at a fair price, starting with the VL16 Pro: help at the press of a button for the wearer, and real peace of mind for everyone who cares about them.
         </p>
         <Link href="/story" className="ulink mt-12 inline-flex items-center gap-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" data-reveal>
           Read the story <span className="text-ember" aria-hidden="true">→</span>
@@ -189,7 +196,7 @@ export function Featured({ product = products[0] }: { product?: Product }) {
           <p className="eyebrow" data-reveal="fade">The watch · {product.model}</p>
           <h2 id="featured-title" className="mt-8" aria-label={product.heading}>
             <span data-split className="mega block text-[clamp(2.6rem,4.6vw,4.8rem)]">Peace of mind on your wrist:</span>
-            <span data-split data-delay="0.1" className="display mt-2 block text-[clamp(2.2rem,3.6vw,3.8rem)] italic text-ember-soft">The L16 Pro Smartwatch</span>
+            <span data-split data-delay="0.1" className="display mt-2 block text-[clamp(2.2rem,3.6vw,3.8rem)] italic text-ember-soft">The VL16 Pro Smartwatch</span>
           </h2>
           <p className="mt-8 max-w-md leading-relaxed text-ash" data-reveal>{product.description}</p>
           <ul className="mt-8 grid gap-3 text-sm" data-stagger>
@@ -267,7 +274,7 @@ export function FeatureRail({ product = products[0] }: { product?: Product }) {
   )
 }
 
-/* ---------------- Full feature list (Toptraking L16PRO) ---------------- */
+/* ---------------- Full feature list (VL16 Pro spec sheet) ---------------- */
 export function FeatureTable({ product = products[0] }: { product?: Product }) {
   return (
     <section id="features" className="wrap scroll-mt-28 py-24 lg:py-32" aria-labelledby="features-title">

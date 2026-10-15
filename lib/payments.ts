@@ -45,6 +45,7 @@ export function parseOrder(body: unknown): OrderInput | string {
   const b = body as Partial<OrderInput> | null
   const product = b?.productId ? getProduct(b.productId) : undefined
   if (!product) return 'Unknown product.'
+  if (product.soldOut) return `${product.name} is sold out.`
   const quantity = Number(b?.quantity)
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) return 'Quantity must be between 1 and 10.'
   const c = b?.customer ?? ({} as Customer)

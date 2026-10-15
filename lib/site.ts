@@ -2,10 +2,10 @@
 export const site = {
   name: 'Affordable Smart Watches',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
-  title: 'Affordable Smart Watches | L16 Pro 4G Safety Smartwatch',
+  title: 'Affordable Smart Watches | VL16 Pro 4G Safety Smartwatch',
   description:
-    'Shop the L16 Pro Smartwatch from Affordable Smart Watches: 4G calling, GPS location tracking, fall alerts and one-touch SOS that helps seniors stay independent and families stay reassured.',
-  // From the client's L16 Pro banner on affordablesmartwatches.com.
+    'Shop the VL16 Pro Smartwatch from Affordable Smart Watches: 4G calling, GPS location tracking, heart-rate monitoring, fall alerts and one-touch SOS that helps seniors stay independent and families stay reassured.',
+  // Brand line from the client's earlier banner on affordablesmartwatches.com.
   tagline: 'More connectivity. More freedom.',
   pillars: ['Stay connected.', 'Live healthier.', 'Do more.'],
   about:
@@ -14,9 +14,10 @@ export const site = {
   logo: { full: '/logo/logo-white.png', mark: '/logo/mark-white.png', original: '/logo/smartlogo.png' },
   // Client will supply final store/contact wording; update here.
   contact: { name: 'Herbert Reid', phone: '604 256 4183', tel: '+16042564183', email: 'herbertreid@hotmail.com' },
-  // L16 Pro product video from the client's site, re-encoded without audio.
-  heroVideo: '/media/l16-pro.mp4',
-  promoBanner: '/media/l16-pro-banner.webp',
+  // VL16 Pro product video from the manufacturer's Alibaba listing, re-encoded without audio.
+  heroVideo: '/media/vl16-pro.mp4',
+  // Client's VL16 Pro banner (public/media/banner.jpeg, resized to webp). Price $125 is baked in.
+  promoBanner: '/media/vl16-pro-banner.webp',
   // Hero clock shows US Eastern time.
   timeZone: 'America/New_York',
   timeLabel: 'New York',

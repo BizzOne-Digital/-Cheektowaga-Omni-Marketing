@@ -37,7 +37,7 @@ export default function StoryPage() {
               so the people you love can keep living life their way, with help always within reach.
             </p>
             <p>
-              Our first watch, the L16 Pro, puts the essentials on one wrist: GPS location, fall alerts, a one-touch SOS key that notifies family,
+              Our first watch, the VL16 Pro, puts the essentials on one wrist: GPS location, fall alerts, a one-touch SOS key that notifies family,
               two-way calling and everyday health readings. Simple for the wearer. Reassuring for everyone else.
             </p>
           </div>
@@ -50,7 +50,7 @@ export default function StoryPage() {
             ))}
           </dl>
           <div className="flex flex-wrap gap-3" data-reveal>
-            <Link href="/watches" className="btn" data-magnetic>Meet the L16 Pro <span className="btn-arrow" aria-hidden="true">→</span></Link>
+            <Link href="/watches" className="btn" data-magnetic>Meet the VL16 Pro <span className="btn-arrow" aria-hidden="true">→</span></Link>
             <Link href="/contact" className="btn btn-ghost">Get in touch</Link>
           </div>
         </div>

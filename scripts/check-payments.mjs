@@ -14,18 +14,18 @@ const post = async (path, body, headers = {}) => {
 
 let r = await post('/api/checkout', { productId: 'nope', quantity: 1, customer })
 assert.equal(r.status, 400, 'unknown product rejected')
-r = await post('/api/checkout', { productId: 'l16-pro', quantity: 11, customer })
+r = await post('/api/checkout', { productId: 'vl16-pro', quantity: 11, customer })
 assert.equal(r.status, 400, 'quantity cap')
-r = await post('/api/checkout', { productId: 'l16-pro', quantity: 1, customer: { ...customer, country: 'United States' } })
+r = await post('/api/checkout', { productId: 'vl16-pro', quantity: 1, customer: { ...customer, country: 'United States' } })
 assert.equal(r.status, 400, 'country must be an ISO code we ship to')
-r = await post('/api/checkout', { productId: 'l16-pro', quantity: 1, customer, priceCents: 1 })
-// 503 = blocked (unconfirmed prices or no key); 502 = Stripe refused the dummy key. Either way no session, and the client price is ignored.
-assert.ok([502, 503].includes(r.status), `checkout with dummy key should not succeed (got ${r.status})`)
+r = await post('/api/checkout', { productId: 'vl16-pro', quantity: 1, customer, priceCents: 1 })
+// Sold out = 400; 503 = blocked (unconfirmed prices or no key); 502 = Stripe refused the dummy key. Either way no session, and the client price is ignored.
+assert.ok(r.json?.error?.includes('sold out') || [502, 503].includes(r.status), `checkout with dummy key should not succeed (got ${r.status})`)
 
 const session = {
-  id: 'cs_test_123', object: 'checkout.session', payment_status: 'paid', amount_total: 9900, currency: 'usd',
+  id: 'cs_test_123', object: 'checkout.session', payment_status: 'paid', amount_total: 12500, currency: 'usd',
   customer_details: { email: 'test@example.com' },
-  metadata: { product_id: 'l16-pro', quantity: '1', customer_name: 'Test Buyer', customer_phone: '555 0100', ship_line1: '1 Test St', ship_city: 'Buffalo', ship_postal: '14225', ship_country: 'US' },
+  metadata: { product_id: 'vl16-pro', quantity: '1', customer_name: 'Test Buyer', customer_phone: '555 0100', ship_line1: '1 Test St', ship_city: 'Buffalo', ship_postal: '14225', ship_country: 'US' },
 }
 const payload = JSON.stringify({ id: 'evt_test', object: 'event', type: 'checkout.session.completed', data: { object: session } })
 const signature = new Stripe('sk_test_unused').webhooks.generateTestHeaderString({ payload, secret })
@@ -34,7 +34,7 @@ r = await post('/api/stripe/webhook', payload)
 assert.equal(r.status, 400, 'missing signature rejected')
 r = await post('/api/stripe/webhook', payload, { 'stripe-signature': signature.replace(/v1=./, 'v1=0') })
 assert.equal(r.status, 400, 'tampered signature rejected')
-r = await post('/api/stripe/webhook', payload.replace("9900", "1"), { 'stripe-signature': signature })
+r = await post('/api/stripe/webhook', payload.replace("12500", "1"), { 'stripe-signature': signature })
 assert.equal(r.status, 400, 'tampered body rejected')
 r = await post('/api/stripe/webhook', payload, { 'stripe-signature': signature })
 assert.equal(r.status, 200, 'valid signed event accepted')

@@ -53,6 +53,12 @@ export function OrderProvider({ children, shippingAtCheckout = false, taxAtCheck
 
 export function BuyButton({ productId, className = 'btn', children = 'Buy Now' }: { productId: string; className?: string; children?: React.ReactNode }) {
   const open = useOrder()
+  if (getProduct(productId)?.soldOut)
+    return (
+      <button type="button" className={`${className} cursor-not-allowed opacity-60`} disabled aria-disabled="true">
+        Sold Out
+      </button>
+    )
   return (
     <button type="button" className={className} onClick={() => open({ kind: 'buy', productId })} data-magnetic>
       {children} <span className="btn-arrow" aria-hidden="true">→</span>

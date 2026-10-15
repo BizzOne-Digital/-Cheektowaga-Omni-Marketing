@@ -12,7 +12,7 @@ export function Gallery({ product }: { product: Product }) {
       <div className="product-stage light relative aspect-square" data-reveal="mask">
         <img key={main.src} src={main.src} alt={main.alt} className="render absolute inset-0 size-full object-contain p-[6%]" />
       </div>
-      <ul className="grid grid-cols-4 gap-3 sm:grid-cols-7" aria-label="Product photos">
+      <ul className="grid grid-cols-5 gap-2 sm:grid-cols-8 sm:gap-3" aria-label="Product photos">
         {product.images.map((img, i) => (
           <li key={img.src}>
             <button
