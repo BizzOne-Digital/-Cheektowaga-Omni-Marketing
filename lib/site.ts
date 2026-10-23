@@ -8,7 +8,6 @@ export const site = {
   keywords: ['elder care smartwatch', 'smartwatch for seniors', 'senior GPS watch', 'fall detection watch for elderly', 'SOS watch for elderly parents', 'medical alert watch', 'affordable elder care watch', 'GPS tracker for elderly'],
   // Brand line from the client's earlier banner on affordablesmartwatches.com.
   tagline: 'More connectivity. More freedom.',
-  pillars: ['Stay connected.', 'Live healthier.', 'Do more.'],
   about:
     'Affordable Smart Watches brings practical 4G safety smartwatches to families at a fair price, helping seniors stay independent and the people who love them stay reassured.',
   // Logo source: public/logo/smartlogo.png (navy). White versions are generated for the dark UI.

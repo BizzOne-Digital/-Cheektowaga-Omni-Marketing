@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server'
+import { dbConfigured } from '@/lib/db'
+import { applyStripeEvent } from '@/lib/orders'
 import { describeSession, verifyWebhook } from '@/lib/payments'
 import { notify } from '@/lib/notify'
 
 // Stripe → this endpoint. Add it in Dashboard → Developers → Webhooks:
 //   URL: https://<your-domain>/api/stripe/webhook
 //   Events: checkout.session.completed, checkout.session.async_payment_succeeded,
-//           checkout.session.async_payment_failed
+//           checkout.session.async_payment_failed, checkout.session.expired, charge.refunded
 // This is the source of truth for paid orders — the success page can be skipped by the shopper.
+// Verified events update the order's payment status in MongoDB (lib/orders.ts); nothing else can.
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
@@ -24,6 +27,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid signature' }, { status: 400 })
   }
 
+  if (dbConfigured) {
+    try {
+      // false = Stripe re-sent an event we already applied: skip it (and its alert).
+      if (!(await applyStripeEvent(event))) return NextResponse.json({ received: true, duplicate: true })
+    } catch (err) {
+      console.error('[stripe webhook] could not record event', event.id, (err as Error).message)
+      return NextResponse.json({ error: 'temporarily unavailable' }, { status: 500 }) // Stripe retries
+    }
+  }
+
   const session = event.data.object as Parameters<typeof describeSession>[0]
   let subject: string | null = null
   if (event.type === 'checkout.session.completed') {
@@ -39,7 +52,6 @@ export async function POST(req: Request) {
   if (subject) {
     const summary = describeSession(session)
     console.info(`[stripe webhook] ${subject}\n${summary}`)
-    // ponytail: alerts may repeat if Stripe retries an event; Stripe Dashboard stays the order record. Add an event-id store if duplicates matter.
     const result = await notify({
       type: subject,
       name: session.metadata?.customer_name ?? '',

@@ -1,6 +1,7 @@
 import 'server-only'
 import Stripe from 'stripe'
-import { getProduct, money, PRICING_CONFIRMED } from './products'
+import { dbConfigured } from './db'
+import { money, PRICING_CONFIRMED, type Product } from './products'
 import { site, usStates } from './site'
 
 // Payment provider boundary. To swap Stripe for another processor, replace the bodies
@@ -33,6 +34,7 @@ export const taxAtCheckout = process.env.STRIPE_AUTOMATIC_TAX?.trim().toLowerCas
  */
 export function paymentsBlocked(): string | null {
   if (!stripe) return 'Stripe is not configured (STRIPE_SECRET_KEY missing or invalid).'
+  if (!dbConfigured) return 'MONGODB_URI is not set (orders and stock live in the database).'
   if (isLiveMode && !PRICING_CONFIRMED) return 'Live mode is blocked until PRICING_CONFIRMED = true in lib/products.ts.'
   return null
 }
@@ -52,11 +54,10 @@ export function blockedCountry(headers: Headers): string | null {
   return country && country !== 'US' ? country : null
 }
 
-// Never trust the client: price always comes from the server-side catalog.
+// Never trust the client: price and availability come from the database when stock is reserved (lib/orders.ts).
 export function parseOrder(body: unknown): OrderInput | string {
   const b = body as Partial<OrderInput> | null
-  const product = b?.productId ? getProduct(b.productId) : undefined
-  if (!product) return 'Unknown product.'
+  if (typeof b?.productId !== 'string' || !/^[a-z0-9-]{1,40}$/.test(b.productId)) return 'Unknown product.'
   const quantity = Number(b?.quantity)
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) return 'Quantity must be between 1 and 10.'
   const c = b?.customer ?? ({} as Customer)
@@ -66,22 +67,29 @@ export function parseOrder(body: unknown): OrderInput | string {
   if (c.country.trim().toUpperCase() !== 'US') return 'We only ship to addresses in the United States.'
   if (!STATES.has(c.state.trim().toUpperCase())) return 'Choose a US state.'
   if (!ZIP.test(c.postal.trim())) return 'Enter a valid US ZIP code (e.g. 10001).'
-  if (product.soldOut) return `${product.name} is sold out.`
   const customer = Object.fromEntries(fields.map((f) => [f, c[f].trim()])) as Customer
   customer.country = 'US'
   customer.state = customer.state.toUpperCase()
-  return { productId: product.id, quantity, customer }
+  return { productId: b.productId, quantity, customer }
 }
 
-export async function createCheckout(order: OrderInput, requestOrigin: string) {
+// Stripe's minimum. Unpaid sessions expire after this, and checkout.session.expired returns the reserved stock.
+const CHECKOUT_MINUTES = 30
+
+export type PlacedOrder = { orderId: string; number: string; product: Pick<Product, 'id' | 'name' | 'finish' | 'line' | 'priceCents'> }
+
+export async function createCheckout(order: OrderInput, placed: PlacedOrder, requestOrigin: string) {
   if (!stripe) throw new Error('not_configured')
-  const product = getProduct(order.productId)!
+  const { product } = placed
   const { customer } = order
   // Prefer the configured public URL so redirects never depend on the request's Host header.
   const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || requestOrigin
   // Each value stays well under Stripe's 500-char metadata limit (inputs are capped at 200).
   const metadata = {
+    order_id: placed.orderId,
+    order_number: placed.number,
     product_id: product.id,
+    product_name: product.name.slice(0, 200),
     quantity: String(order.quantity),
     customer_name: customer.name,
     customer_phone: customer.phone,
@@ -94,6 +102,7 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_MINUTES * 60,
     customer_email: customer.email,
     line_items: [
       {
@@ -109,7 +118,7 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
     ...(shippingRate && { shipping_options: [{ shipping_rate: shippingRate }] }),
     ...(taxAtCheckout && { automatic_tax: { enabled: true }, billing_address_collection: 'required' as const }),
     payment_intent_data: {
-      description: `${site.name}: ${product.name} × ${order.quantity}`,
+      description: `${site.name}: ${product.name} × ${order.quantity} (${placed.number})`,
       // Structured shipping shows on the payment in the Stripe Dashboard and in receipts.
       shipping: {
         name: customer.name,
@@ -122,7 +131,7 @@ export async function createCheckout(order: OrderInput, requestOrigin: string) {
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/checkout/cancel`,
   })
-  return session.url!
+  return { id: session.id, url: session.url! }
 }
 
 export type CheckoutStatus = { state: 'paid' | 'processing' | 'unpaid'; email: string | null; total: number; name?: string }
@@ -148,13 +157,33 @@ export function verifyWebhook(rawBody: string, signature: string | null) {
 
 /** Plain-text order summary for the owner notification. */
 export function describeSession(s: Stripe.Checkout.Session) {
-  const product = getProduct(s.metadata?.product_id ?? '')
   const m = s.metadata ?? {}
   return [
-    `${product ? `${product.name} — ${product.finish}` : s.metadata?.product_id} × ${s.metadata?.quantity ?? '?'}`,
+    ...(m.order_number ? [`Order: ${m.order_number}`] : []),
+    `${m.product_name ?? m.product_id} × ${m.quantity ?? '?'}`,
     `Total paid: ${money(s.amount_total ?? 0)} ${s.currency?.toUpperCase() ?? ''}`,
     `Customer: ${s.metadata?.customer_name ?? s.customer_details?.name ?? ''} · ${s.customer_details?.email ?? s.customer_email ?? ''} · ${s.metadata?.customer_phone ?? ''}`,
     `Ship to: ${[m.ship_line1, m.ship_city, m.ship_state, m.ship_postal, m.ship_country].filter(Boolean).join(', ')}`,
     `Stripe session: ${s.id}`,
   ].join('\n')
 }
+
+/** Card brand and last 4 (or the wallet / method type) for the admin payments view. Never full card data. */
+export async function paymentMethod(paymentIntentId: string): Promise<string | undefined> {
+  if (!stripe) return undefined
+  try {
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['latest_charge'] })
+    const details = (pi.latest_charge as Stripe.Charge | null)?.payment_method_details
+    if (!details) return undefined
+    const card = details.card
+    if (card) return `${card.wallet?.type ? `${card.wallet.type.replace(/_/g, ' ')} · ` : ''}${card.brand} •••• ${card.last4}`
+    return details.type.replace(/_/g, ' ')
+  } catch (err) {
+    console.warn('[stripe] payment method lookup failed:', (err as Error).message)
+    return undefined
+  }
+}
+
+/** Stripe Dashboard link for a payment (opens in the matching test/live mode). */
+export const dashboardUrl = (paymentIntentId: string, livemode: boolean) =>
+  `https://dashboard.stripe.com/${livemode ? '' : 'test/'}payments/${paymentIntentId}`

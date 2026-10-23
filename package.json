@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "seed": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -15,6 +17,7 @@
     "clsx": "^2.1.1",
     "gsap": "^3.15.0",
     "lucide-react": "^1.16.0",
+    "mongodb": "^7.7.0",
     "next": "16.3.3",
     "react": "^19",
     "react-dom": "^19",

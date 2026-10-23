@@ -34,7 +34,11 @@ export function ContactForm() {
     )
 
   return (
-    <form onSubmit={submit} className="grid gap-8">
+    <form onSubmit={submit} className="relative grid gap-8">
+      {/* Spam trap: hidden from people and assistive tech; bots that fill it are ignored by /api/contact. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] size-px overflow-hidden">
+        <label>Website <input name="website" tabIndex={-1} autoComplete="off" /></label>
+      </div>
       <div className="grid gap-8 sm:grid-cols-2">
         <Field id="c-name" name="name" label="Name" autoComplete="name" />
         <Field id="c-email" name="email" label="Email" type="email" autoComplete="email" error="Enter a valid email address." />

@@ -7,6 +7,7 @@ import { Loader } from '@/components/loader'
 import { Motion } from '@/components/motion'
 import { Nav } from '@/components/nav'
 import { OrderProvider } from '@/components/order'
+import { PublicOnly } from '@/components/public-only'
 import { shippingAtCheckout, taxAtCheckout } from '@/lib/payments'
 import { products } from '@/lib/products'
 import { site } from '@/lib/site'
@@ -52,15 +53,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-ember focus:px-4 focus:py-3 focus:text-ink">
           Skip to content
         </a>
-        <Loader />
-        <BgStage />
+        <PublicOnly>
+          <Loader />
+          <BgStage />
+        </PublicOnly>
         <OrderProvider shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout}>
-          <Nav />
+          <PublicOnly><Nav /></PublicOnly>
           <main id="main">{children}</main>
-          <Footer />
+          <PublicOnly><Footer /></PublicOnly>
         </OrderProvider>
-        <Motion />
-        <Cursor />
+        <PublicOnly>
+          <Motion />
+          <Cursor />
+        </PublicOnly>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       </body>
     </html>

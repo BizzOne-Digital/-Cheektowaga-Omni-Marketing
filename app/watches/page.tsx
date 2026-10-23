@@ -3,20 +3,22 @@ import { StickyCta } from '@/components/hero'
 import { Gallery } from '@/components/gallery'
 import { BuyButton } from '@/components/order'
 import { FeatureTable, Marquee, Price, PriceCompare } from '@/components/sections'
-import { healthNote, highlights, money, PRICING_CONFIRMED, products, specs } from '@/lib/products'
+import { getFeatured, getProducts } from '@/lib/catalog'
+import { healthNote, highlights, money, PRICING_CONFIRMED, type Product } from '@/lib/products'
 import { availability, site } from '@/lib/site'
 
-const product = products[0]
-
-export const metadata: Metadata = {
-  title: product.name,
-  description: `${product.name}: ${product.description} ${PRICING_CONFIRMED ? `${money(product.priceCents)} USD.` : ''}`.trim(),
-  alternates: { canonical: '/watches' },
-  openGraph: { images: [{ url: product.images[0].src, alt: product.images[0].alt }] },
+export async function generateMetadata(): Promise<Metadata> {
+  const product = await getFeatured()
+  return {
+    title: product.name,
+    description: `${product.name}: ${product.description} ${PRICING_CONFIRMED ? `${money(product.priceCents)} USD.` : ''}`.trim(),
+    alternates: { canonical: '/watches' },
+    openGraph: { images: [{ url: product.images[0].src, alt: product.images[0].alt }] },
+  }
 }
 
 // Product schema carries only facts we have (no ratings or reviews).
-const jsonLd = {
+const jsonLdFor = (products: Product[]) => ({
   '@context': 'https://schema.org',
   '@graph': products.map((p) => ({
     '@type': 'Product',
@@ -24,13 +26,16 @@ const jsonLd = {
     model: p.model,
     color: p.finish,
     description: p.description,
-    image: p.images.map((i) => `${site.url}${i.src}`),
+    image: p.images.map((i) => (i.src.startsWith('/') ? `${site.url}${i.src}` : i.src)),
     brand: { '@type': 'Brand', name: site.name },
     ...(PRICING_CONFIRMED ? { offers: { '@type': 'Offer', priceCurrency: 'USD', price: (p.priceCents / 100).toFixed(2), eligibleRegion: { '@type': 'Country', name: 'US' }, url: `${site.url}/watches`, ...(p.soldOut && { availability: 'https://schema.org/SoldOut' }) } } : {}),
   })),
-}
+})
 
-export default function WatchesPage() {
+export default async function WatchesPage() {
+  const products = await getProducts()
+  const product = products[0]
+  const jsonLd = jsonLdFor(products)
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
@@ -61,7 +66,7 @@ export default function WatchesPage() {
           </ul>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-y border-line py-6" data-reveal>
             <Price product={product} />
-            <BuyButton productId={product.id} />
+            <BuyButton product={product} />
           </div>
           <p className="mt-4 text-sm text-ash" data-reveal>{availability.long}</p>
           <a href="#specs" className="ulink mt-6 inline-flex items-center gap-3 text-[0.75rem] font-semibold uppercase tracking-[0.2em]" data-reveal>
@@ -86,27 +91,29 @@ export default function WatchesPage() {
         </section>
       )}
 
-      <section id="specs" className="wrap scroll-mt-28 py-32" aria-labelledby="specs-title">
-        <div className="grid gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <p className="eyebrow" data-reveal="fade">Specifications</p>
-            <h2 id="specs-title" data-split className="display mt-6 text-[clamp(2.6rem,5vw,5rem)]">
-              The <span className="italic text-ember">details.</span>
-            </h2>
+      {product.specs.length > 0 && (
+        <section id="specs" className="wrap scroll-mt-28 py-32" aria-labelledby="specs-title">
+          <div className="grid gap-12 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <p className="eyebrow" data-reveal="fade">Specifications</p>
+              <h2 id="specs-title" data-split className="display mt-6 text-[clamp(2.6rem,5vw,5rem)]">
+                The <span className="italic text-ember">details.</span>
+              </h2>
+            </div>
+            <div className="lg:col-span-8">
+              <dl className="border-t border-line" data-stagger>
+                {product.specs.map(({ label, value }, i) => (
+                  <div key={i} className="grid gap-2 border-b border-line py-5 sm:grid-cols-[12rem_1fr] sm:gap-8">
+                    <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash">{label}</dt>
+                    <dd className="leading-relaxed">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-8 max-w-2xl text-xs leading-relaxed text-ash" data-reveal>{healthNote}</p>
+            </div>
           </div>
-          <div className="lg:col-span-8">
-            <dl className="border-t border-line" data-stagger>
-              {specs.map(([label, value]) => (
-                <div key={label} className="grid gap-2 border-b border-line py-5 sm:grid-cols-[12rem_1fr] sm:gap-8">
-                  <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash">{label}</dt>
-                  <dd className="leading-relaxed">{value}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-8 max-w-2xl text-xs leading-relaxed text-ash" data-reveal>{healthNote}</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <div className="mt-16"><Marquee words={['Fair price', 'No monthly fee', 'Peace of mind']} /></div>
       <PriceCompare product={product} />

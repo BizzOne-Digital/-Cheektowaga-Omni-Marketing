@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { comparison, comparisonChecked, features, featureTable, highlights, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
+import type { Banner } from '@/lib/catalog'
+import type { Content } from '@/lib/content'
+import { comparison, comparisonChecked, features, highlights, money, PRICING_CONFIRMED, products, type Product } from '@/lib/products'
 import { availability, site } from '@/lib/site'
 import { LoopVideo, UsTime } from './hero'
 import { BuyButton, ProductVisual } from './order'
@@ -55,10 +57,8 @@ export function PriceBurst({ product }: { product: Product }) {
 }
 
 /* ---------------- Hero (orange design merged with the client's VL16 Pro banner) ---------------- */
-// Feature row from the client's VL16 Pro banner.
-const heroChips = ['Heart rate monitoring', 'Fitness tracking', 'Smart notifications', 'Long battery life']
-
-export function Hero({ product = products[0] }: { product?: Product }) {
+// Eyebrow, tagline, chips (from the client's VL16 Pro banner) and pillars are editable at /admin/content.
+export function Hero({ product, content }: { product: Product; content: Content }) {
   return (
     <section className="relative isolate min-h-[100svh] overflow-hidden" aria-labelledby="hero-title">
       {/* Orange + violet light, as on the client's banner */}
@@ -71,7 +71,7 @@ export function Hero({ product = products[0] }: { product?: Product }) {
       <div className="wrap relative grid min-h-[100svh] grid-rows-[1fr_auto] pt-28 lg:pt-32">
         <div className="grid items-center gap-12 lg:grid-cols-12">
           <div className="relative z-10 lg:col-span-7">
-            <p className="eyebrow" data-reveal="fade">VL16 Pro · Affordable smart watch</p>
+            <p className="eyebrow" data-reveal="fade">{content.heroEyebrow}</p>
             <h1 id="hero-title" className="mt-8">
               <span data-split className="mega block w-max whitespace-nowrap text-[clamp(2.6rem,15vw,5rem)] lg:text-[clamp(3.4rem,8.4vw,9.5rem)]">Affordable</span>{' '}
               <span data-split data-delay="0.08" className="mega block w-max whitespace-nowrap text-[clamp(2.6rem,15vw,5rem)] lg:text-[clamp(3.4rem,8.4vw,9.5rem)]">Elder Care</span>{' '}
@@ -80,10 +80,10 @@ export function Hero({ product = products[0] }: { product?: Product }) {
               </span>
             </h1>
             <p className="mt-8 text-[clamp(1.25rem,2vw,1.6rem)] font-semibold" data-reveal data-delay="0.3">
-              More connectivity. <span className="text-violet">More freedom.</span>
+              {content.taglineLead} <span className="text-violet">{content.taglineAccent}</span>
             </p>
             <ul className="mt-6 flex flex-wrap gap-2" data-stagger data-delay="0.4" aria-label="Key features">
-              {heroChips.map((c) => (
+              {content.heroChips.map((c) => (
                 <li key={c} className="border border-line-strong bg-ink/60 px-3 py-2 text-[0.6875rem] font-semibold uppercase tracking-[0.16em] text-bone/90 backdrop-blur-sm">
                   {c}
                 </li>
@@ -97,7 +97,7 @@ export function Hero({ product = products[0] }: { product?: Product }) {
                   {product.soldOut && <SoldOutBadge />}
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <BuyButton productId={product.id} />
+                  <BuyButton product={product} />
                   <Link href="/watches" className="btn btn-ghost" data-magnetic>See the watch</Link>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export function Hero({ product = products[0] }: { product?: Product }) {
         </div>
 
         <div className="mt-12 grid grid-cols-2 border-t border-line text-[0.6875rem] font-semibold uppercase tracking-[0.22em] text-ash md:grid-cols-4" data-stagger data-delay="0.6">
-          {site.pillars.map((w, i) => (
+          {content.pillars.map((w, i) => (
             <p key={w} className={`py-5 ${i ? 'md:border-l md:border-line md:pl-6' : ''}`}><span className="text-ember">0{i + 1}</span>&nbsp;&nbsp;{w}</p>
           ))}
           <p className="flex items-center justify-between py-5 md:border-l md:border-line md:pl-6">
@@ -135,20 +135,23 @@ export function Hero({ product = products[0] }: { product?: Product }) {
   )
 }
 
-/* ---------------- Client promo banner ---------------- */
-export function PromoBanner({ product = products[0] }: { product?: Product }) {
+/* ---------------- Client promo banners (managed at /admin/banners) ---------------- */
+export function PromoBanner({ product, banners }: { product: Product; banners: Banner[] }) {
+  if (!banners.length) return null
   return (
-    <section className="wrap py-10" aria-label={`${product.name} promotion`}>
-      <Link href="/watches" className="group block overflow-hidden border border-line transition-colors duration-500 hover:border-ember/60" data-reveal="mask" data-cursor="Shop">
-        <img
-          src={site.promoBanner}
-          width={1600}
-          height={576}
-          alt={`VL16 Pro Smartwatch, affordable smart watches. Heart rate monitoring, fitness tracking, smart notifications, long battery life. ${money(product.priceCents)} USD.${product.soldOut ? ' Currently sold out.' : ''}`}
-          className="h-auto w-full transition-transform duration-1000 ease-[var(--ease-expo)] group-hover:scale-[1.02]"
-          loading="lazy"
-        />
-      </Link>
+    <section className="wrap grid gap-6 py-10" aria-label={`${product.name} promotion`}>
+      {banners.map((b) => (
+        <Link key={b.id} href={b.href} className="group block overflow-hidden border border-line transition-colors duration-500 hover:border-ember/60" data-reveal="mask" data-cursor="Shop">
+          <img
+            src={b.src}
+            width={b.width}
+            height={b.height}
+            alt={`${b.alt}${product.soldOut ? ' Currently sold out.' : ''}`}
+            className="h-auto w-full transition-transform duration-1000 ease-[var(--ease-expo)] group-hover:scale-[1.02]"
+            loading="lazy"
+          />
+        </Link>
+      ))}
     </section>
   )
 }
@@ -199,7 +202,7 @@ export function Intro() {
 }
 
 /* ---------------- Product in ring (moved from the hero) ---------------- */
-export function ProductRing({ product = products[0] }: { product?: Product }) {
+export function ProductRing({ product }: { product: Product }) {
   const img = product.images[0]
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[42rem]" data-reveal="scale">
@@ -220,7 +223,7 @@ export function ProductRing({ product = products[0] }: { product?: Product }) {
 }
 
 /* ---------------- Featured product ---------------- */
-export function Featured({ product = products[0] }: { product?: Product }) {
+export function Featured({ product }: { product: Product }) {
   return (
     <section className="relative py-24 lg:py-32" aria-labelledby="featured-title">
       <div className="wrap grid items-center gap-12 lg:grid-cols-12">
@@ -248,7 +251,7 @@ export function Featured({ product = products[0] }: { product?: Product }) {
             <Price product={product} className="ml-auto" />
           </div>
           <div className="mt-8 flex flex-wrap gap-3" data-reveal>
-            <BuyButton productId={product.id} />
+            <BuyButton product={product} />
             <Link href="/watches" className="btn btn-ghost">Learn more</Link>
           </div>
         </div>
@@ -258,7 +261,7 @@ export function Featured({ product = products[0] }: { product?: Product }) {
 }
 
 /* ---------------- Horizontal feature rail ---------------- */
-export function FeatureRail({ product = products[0] }: { product?: Product }) {
+export function FeatureRail({ product }: { product: Product }) {
   return (
     // Stable wrapper: GSAP moves the pinned <section> into a pin-spacer, so React must only ever remove this div.
     <div>
@@ -300,7 +303,7 @@ export function FeatureRail({ product = products[0] }: { product?: Product }) {
                 </div>
                 <Price product={product} className="shrink-0 flex-col !items-end !gap-0 text-right" />
               </div>
-              <BuyButton productId={product.id} className="btn w-full" />
+              <BuyButton product={product} className="btn w-full" />
             </li>
           </ul>
         </div>
@@ -311,7 +314,8 @@ export function FeatureRail({ product = products[0] }: { product?: Product }) {
 }
 
 /* ---------------- Full feature list (VL16 Pro spec sheet) ---------------- */
-export function FeatureTable({ product = products[0] }: { product?: Product }) {
+export function FeatureTable({ product }: { product: Product }) {
+  if (!product.featureTable.length) return null
   return (
     <section id="features" className="wrap scroll-mt-28 py-24 lg:py-32" aria-labelledby="features-title">
       <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
@@ -324,8 +328,8 @@ export function FeatureTable({ product = products[0] }: { product?: Product }) {
         <Price product={product} />
       </div>
       <dl className="grid border-l border-t border-line sm:grid-cols-2 lg:grid-cols-4" data-stagger>
-        {featureTable.map(([name, detail]) => (
-          <div key={name} className="group flex min-h-36 flex-col justify-between gap-4 border-b border-r border-line p-6 transition-colors duration-500 hover:bg-ink-2/80">
+        {product.featureTable.map(({ label: name, value: detail }, i) => (
+          <div key={i} className="group flex min-h-36 flex-col justify-between gap-4 border-b border-r border-line p-6 transition-colors duration-500 hover:bg-ink-2/80">
             <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-ash transition-colors duration-500 group-hover:text-ember">{name}</dt>
             <dd className="flex items-start gap-2 text-lg leading-snug text-bone">
               {detail === 'Supported' && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-ember" aria-hidden="true" />}
@@ -384,7 +388,7 @@ export function ImageStory() {
 /* ---------------- Price comparison ---------------- */
 const dollars = (v: string) => Number(v.replace(/[^\d.]/g, ''))
 
-export function PriceCompare({ product = products[0] }: { product?: Product }) {
+export function PriceCompare({ product }: { product: Product }) {
   const total = comparison.rows.find((r) => r.total)!.values.map(dollars)
   return (
     <section className="wrap py-24 lg:py-32" aria-labelledby="compare-title">
@@ -444,7 +448,7 @@ export function PriceCompare({ product = products[0] }: { product?: Product }) {
           ))}
         </ul>
         <div className="flex flex-wrap gap-3">
-          <BuyButton productId={product.id} />
+          <BuyButton product={product} />
           <Link href="/watches#specs" className="btn btn-ghost">Full specs</Link>
         </div>
       </div>

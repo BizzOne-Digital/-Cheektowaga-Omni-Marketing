@@ -1,11 +1,13 @@
 'use client'
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { getProduct, money, PRICING_CONFIRMED, type Product } from '@/lib/products'
+import { money, PRICING_CONFIRMED, type Product } from '@/lib/products'
 import { availability, site, usStates } from '@/lib/site'
 import { Field } from './field'
 
-type Mode = { productId: string }
+// What the order panel needs. Pages pass it from the live catalog; checkout re-checks price and stock on the server.
+type OrderItem = Pick<Product, 'id' | 'name' | 'finish' | 'line' | 'priceCents'> & { image: Product['images'][number] }
+type Mode = { product: OrderItem }
 type Status = { state: 'idle' | 'sending' | 'offline' | 'error'; message?: string }
 
 const OrderCtx = createContext<(m: Mode) => void>(() => {})
@@ -45,35 +47,35 @@ export function OrderProvider({ children, shippingAtCheckout = false, taxAtCheck
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
         onClose={() => setTimeout(() => setMode(null), 700)}
       >
-        {mode && <OrderPanel key={mode.productId} mode={mode} shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout} close={() => dialog.current?.close()} />}
+        {mode && <OrderPanel key={mode.product.id} mode={mode} shippingAtCheckout={shippingAtCheckout} taxAtCheckout={taxAtCheckout} close={() => dialog.current?.close()} />}
       </dialog>
     </OrderCtx.Provider>
   )
 }
 
-export function BuyButton({ productId, className = 'btn', children = 'Buy Now' }: { productId: string; className?: string; children?: React.ReactNode }) {
+export function BuyButton({ product, className = 'btn', children = 'Buy Now' }: { product: Product; className?: string; children?: React.ReactNode }) {
   const open = useOrder()
-  if (getProduct(productId)?.soldOut)
+  if (product.soldOut)
     return (
       <button type="button" className={`${className} cursor-not-allowed opacity-60`} disabled aria-disabled="true">
         Sold Out
       </button>
     )
   return (
-    <button type="button" className={className} onClick={() => open({ productId })} data-magnetic>
+    <button type="button" className={className} onClick={() => open({ product: { id: product.id, name: product.name, finish: product.finish, line: product.line, priceCents: product.priceCents, image: product.images[0] } })} data-magnetic>
       {children} <span className="btn-arrow" aria-hidden="true">→</span>
     </button>
   )
 }
 
 // Product photos have white backgrounds; place them on a white (.product-stage.light) panel.
-export function ProductVisual({ product, className = '' }: { product: Product; className?: string }) {
-  const img = product.images[0]
+export function ProductVisual({ product, className = '' }: { product: Pick<Product, 'images'> | OrderItem; className?: string }) {
+  const img = 'image' in product ? product.image : product.images[0]
   return <img src={img.src} alt={img.alt} className={`object-contain ${className}`} loading="lazy" />
 }
 
 function OrderPanel({ mode, close, shippingAtCheckout, taxAtCheckout }: { mode: Mode; close: () => void; shippingAtCheckout: boolean; taxAtCheckout: boolean }) {
-  const product = getProduct(mode.productId)!
+  const { product } = mode
   const [qty, setQty] = useState(1)
   const [status, setStatus] = useState<Status>({ state: 'idle' })
   const [lastOrder, setLastOrder] = useState<Record<string, string>>({})

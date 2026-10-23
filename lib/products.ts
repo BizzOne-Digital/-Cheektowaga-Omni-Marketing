@@ -1,69 +1,39 @@
-// Catalog. Specs follow the Alibaba listing's key attributes (Vivistar "4G GPS elderly smart watch VL16P",
+// Seed catalog and offline fallback. The live catalog is in MongoDB (products collection), edited at /admin/products;
+// `pnpm seed` copies this file into it. Pages read through lib/catalog.ts.
+// No imports here: scripts/seed.mjs loads this file directly with Node.
+// Specs follow the Alibaba listing's key attributes (Vivistar "4G GPS elderly smart watch VL16P",
 // alibaba.com/product-detail/4G-Smart-Watch-Phone-VL16-Alert_1600177032079.html); where the listing is silent
 // (bands, size, weight, app, box) the manufacturer's VL16 Pro spec sheet fills in. Banner, name and price follow
 // affordablesmartwatches.com.
 // Photos: public/media/vl16/photo-1..22.jpg and video public/media/vl16-pro.mp4, from the manufacturer's Alibaba listing.
 // Swap the files (or the src values below) — every page reads images from here.
-export type Product = {
+export type Spec = { label: string; value: string }
+export type ProductData = {
   id: string
   name: string
   model: string
   finish: string
   swatch: string
+  brand: string
+  category: string
   heading: string
   line: string
   description: string
   priceCents: number
+  // Units on hand. 0 = sold out: Buy buttons show SOLD OUT and checkout refuses the order.
+  // Checkout reserves units atomically; expired or failed payments put them back.
+  stock: number
+  sortOrder: number // lowest is the featured product shown across the site
   images: { src: string; alt: string }[] // first image is the main one
   video?: string
-  soldOut?: boolean // true: Buy buttons show SOLD OUT and checkout refuses the order
+  specs: Spec[] // Watches page "The details"
+  featureTable: Spec[] // Watches page "Every feature"
 }
+export type Product = ProductData & { soldOut: boolean }
+export const withStock = (p: ProductData): Product => ({ ...p, soldOut: p.stock <= 0 })
 
 // Prices are final; while false the UI flags pricing as provisional and live checkout is blocked.
 export const PRICING_CONFIRMED = true
-
-export const products: Product[] = [
-  {
-    id: 'vl16-pro',
-    name: 'VL16 Pro Smartwatch',
-    model: 'VL16 PRO',
-    finish: 'Black',
-    swatch: '#151515',
-    heading: 'Peace of Mind on Your Wrist: The VL16 Pro Smartwatch',
-    line: 'Peace of mind on your wrist.',
-    description:
-      'A 4G safety smartwatch with GPS location tracking, fall alerts, heart-rate and health monitoring, and a one-touch SOS that notifies family, helping seniors stay independent and caregivers stay reassured.',
-    priceCents: 12500,
-    soldOut: true,
-    video: '/media/vl16-pro.mp4',
-    images: [
-      { src: '/media/vl16/photo-1.jpg', alt: 'Two VL16 Pro Smartwatches in black, one showing the clock and one the heart-rate screen' },
-      { src: '/media/vl16/photo-2.jpg', alt: 'VL16 Pro Smartwatch in black with the heart key, clock screen showing time, steps and signal' },
-      { src: '/media/vl16/photo-3.jpg', alt: 'VL16 Pro Smartwatch showing the SOS alert screen after a fall' },
-      { src: '/media/vl16/photo-4.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back' },
-      { src: '/media/vl16/photo-5.jpg', alt: 'Back of the VL16 Pro Smartwatch showing the heart-rate, SpO2 and temperature sensors' },
-      { src: '/media/vl16/photo-6.jpg', alt: 'VL16 Pro Smartwatch showing the temperature screen' },
-      { src: '/media/vl16/photo-7.jpg', alt: 'Senior checking the VL16 Pro Smartwatch on their wrist' },
-      { src: '/media/vl16/photo-8.jpg', alt: 'VL16 Pro Smartwatch in red and white, with sleep and clock screens' },
-      { src: '/media/vl16/photo-9.jpg', alt: 'VL16 Pro Smartwatch showing heart rate, SpO2 and blood pressure' },
-      { src: '/media/vl16/photo-10.jpg', alt: 'VL16 Pro Smartwatch with water splash, waterproof design' },
-      { src: '/media/vl16/photo-11.jpg', alt: 'VL16 Pro Smartwatch SOS call screen: hold for 3 seconds to call an emergency contact' },
-      { src: '/media/vl16/photo-12.jpg', alt: 'Senior checking health readings on the VL16 Pro Smartwatch' },
-      { src: '/media/vl16/photo-13.jpg', alt: 'VL16 Pro Smartwatch location screen with emergency positioning on a map' },
-      { src: '/media/vl16/photo-14.jpg', alt: 'VL16 Pro Smartwatch medication reminder: time to take medicine' },
-      { src: '/media/vl16/photo-15.jpg', alt: 'VL16 Pro Smartwatch side view, heart-rate monitoring' },
-      { src: '/media/vl16/photo-16.jpg', alt: 'VL16 Pro Smartwatch on its magnetic charging dock with USB-C socket' },
-      { src: '/media/vl16/photo-17.jpg', alt: 'VL16 Pro Smartwatch health screen: heart rate, blood pressure, SpO2 and temperature' },
-      { src: '/media/vl16/photo-18.jpg', alt: 'VL16 Pro Smartwatch with the family app: safe zones and location history' },
-      { src: '/media/vl16/photo-19.jpg', alt: 'VL16 Pro Smartwatches in their gift boxes, with the SOS screen' },
-      { src: '/media/vl16/photo-20.jpg', alt: 'VL16 Pro Smartwatch temperature screen, black and white models' },
-      { src: '/media/vl16/photo-21.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back with feature icons' },
-      { src: '/media/vl16/photo-22.jpg', alt: 'VL16 Pro Smartwatch: 2G, 3G, 4G and Wi-Fi global roaming' },
-    ],
-  },
-]
-
-export const getProduct = (id: string) => products.find((p) => p.id === id)
 
 // Whole-dollar amounts show without decimals ($99), others with cents ($99.50).
 export const money = (cents: number) =>
@@ -107,7 +77,7 @@ export const features = [
   { stat: '4 days', title: 'Long battery life', text: '650 mAh battery: up to 4 days per charge.' },
 ]
 
-export const specs: [label: string, value: string][] = [
+const specs: [label: string, value: string][] = [
   ['Model', 'VL16 Pro (VL16P)'],
   ['Network', '4G LTE B1, B3, B5, B7, B8, B9, B19, B20, B28, B40, B41 · 3G WCDMA B1, B8 · 2G GSM 850 / 900 / 1800 / 1900 MHz · Wi-Fi · Bluetooth'],
   ['SIM', 'Supports a SIM card (SIM and data plan not included)'],
@@ -133,7 +103,7 @@ export const specs: [label: string, value: string][] = [
 ]
 
 // Full feature list from the Alibaba listing's key attributes (Watches page).
-export const featureTable: [feature: string, detail: string][] = [
+const featureTable: [feature: string, detail: string][] = [
   ['SOS alarm', 'Supported'],
   ['Geo-fence alert', 'Automatic alarm when the wearer leaves the set safe zone'],
   ['Positioning', 'GPS, BeiDou, Wi-Fi and LBS'],
@@ -151,6 +121,54 @@ export const featureTable: [feature: string, detail: string][] = [
   ['Weight', '40 g'],
   ['Screen', 'TFT touchscreen, 320 × 240 resolution'],
   ['Compatible with Apple & Android', 'Supported'],
+]
+
+const pairs = (rows: [string, string][]): Spec[] => rows.map(([label, value]) => ({ label, value }))
+
+export const products: ProductData[] = [
+  {
+    id: 'vl16-pro',
+    name: 'VL16 Pro Smartwatch',
+    model: 'VL16 PRO',
+    finish: 'Black',
+    swatch: '#151515',
+    brand: 'Affordable Smart Watches', // as in the Product JSON-LD
+    category: 'Watches',
+    heading: 'Peace of Mind on Your Wrist: The VL16 Pro Smartwatch',
+    line: 'Peace of mind on your wrist.',
+    description:
+      'A 4G safety smartwatch with GPS location tracking, fall alerts, heart-rate and health monitoring, and a one-touch SOS that notifies family, helping seniors stay independent and caregivers stay reassured.',
+    priceCents: 12500,
+    stock: 0, // sold out
+    sortOrder: 0,
+    video: '/media/vl16-pro.mp4',
+    images: [
+      { src: '/media/vl16/photo-1.jpg', alt: 'Two VL16 Pro Smartwatches in black, one showing the clock and one the heart-rate screen' },
+      { src: '/media/vl16/photo-2.jpg', alt: 'VL16 Pro Smartwatch in black with the heart key, clock screen showing time, steps and signal' },
+      { src: '/media/vl16/photo-3.jpg', alt: 'VL16 Pro Smartwatch showing the SOS alert screen after a fall' },
+      { src: '/media/vl16/photo-4.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back' },
+      { src: '/media/vl16/photo-5.jpg', alt: 'Back of the VL16 Pro Smartwatch showing the heart-rate, SpO2 and temperature sensors' },
+      { src: '/media/vl16/photo-6.jpg', alt: 'VL16 Pro Smartwatch showing the temperature screen' },
+      { src: '/media/vl16/photo-7.jpg', alt: 'Senior checking the VL16 Pro Smartwatch on their wrist' },
+      { src: '/media/vl16/photo-8.jpg', alt: 'VL16 Pro Smartwatch in red and white, with sleep and clock screens' },
+      { src: '/media/vl16/photo-9.jpg', alt: 'VL16 Pro Smartwatch showing heart rate, SpO2 and blood pressure' },
+      { src: '/media/vl16/photo-10.jpg', alt: 'VL16 Pro Smartwatch with water splash, waterproof design' },
+      { src: '/media/vl16/photo-11.jpg', alt: 'VL16 Pro Smartwatch SOS call screen: hold for 3 seconds to call an emergency contact' },
+      { src: '/media/vl16/photo-12.jpg', alt: 'Senior checking health readings on the VL16 Pro Smartwatch' },
+      { src: '/media/vl16/photo-13.jpg', alt: 'VL16 Pro Smartwatch location screen with emergency positioning on a map' },
+      { src: '/media/vl16/photo-14.jpg', alt: 'VL16 Pro Smartwatch medication reminder: time to take medicine' },
+      { src: '/media/vl16/photo-15.jpg', alt: 'VL16 Pro Smartwatch side view, heart-rate monitoring' },
+      { src: '/media/vl16/photo-16.jpg', alt: 'VL16 Pro Smartwatch on its magnetic charging dock with USB-C socket' },
+      { src: '/media/vl16/photo-17.jpg', alt: 'VL16 Pro Smartwatch health screen: heart rate, blood pressure, SpO2 and temperature' },
+      { src: '/media/vl16/photo-18.jpg', alt: 'VL16 Pro Smartwatch with the family app: safe zones and location history' },
+      { src: '/media/vl16/photo-19.jpg', alt: 'VL16 Pro Smartwatches in their gift boxes, with the SOS screen' },
+      { src: '/media/vl16/photo-20.jpg', alt: 'VL16 Pro Smartwatch temperature screen, black and white models' },
+      { src: '/media/vl16/photo-21.jpg', alt: 'VL16 Pro Smartwatch from the side, front and back with feature icons' },
+      { src: '/media/vl16/photo-22.jpg', alt: 'VL16 Pro Smartwatch: 2G, 3G, 4G and Wi-Fi global roaming' },
+    ],
+    specs: pairs(specs),
+    featureTable: pairs(featureTable),
+  },
 ]
 
 export const healthNote =

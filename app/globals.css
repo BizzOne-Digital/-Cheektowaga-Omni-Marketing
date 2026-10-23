@@ -535,3 +535,111 @@ dialog.menu[open] .menu-link {
   from { transform: translateY(-100%); }
   to { transform: translateY(200%); }
 }
+
+/* ---------- Admin dashboard (/admin): same tokens, denser controls ---------- */
+.btn-sm {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  gap: 0.5rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+}
+.btn-danger {
+  --btn-bg: transparent;
+  --btn-fg: #ff9b73;
+  --btn-wipe: #ff7a4d;
+  box-shadow: inset 0 0 0 1px rgb(255 122 77 / 0.5);
+}
+.btn-danger:hover,
+.btn-danger:focus-visible {
+  color: var(--color-ink);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid currentColor;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tag::before {
+  content: '';
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.tag-ok { color: #8fd6a8; }
+.tag-warn { color: var(--color-champagne); }
+.tag-bad { color: #ff9b73; }
+.tag-info { color: var(--color-ember-soft); }
+.tag-mute { color: var(--color-ash); }
+.ainput {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-ink-2);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 0;
+  color: var(--color-bone);
+  font-size: 0.875rem;
+}
+.ainput:focus {
+  outline: none;
+  border-color: var(--color-ember);
+}
+.ainput option {
+  background: var(--color-ink-2);
+}
+textarea.ainput {
+  min-height: 6rem;
+  resize: vertical;
+}
+.alabel {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+.atable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.atable th {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-line-strong);
+  text-align: left;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+  white-space: nowrap;
+}
+.atable td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+.atable tbody tr:hover {
+  background: rgb(245 242 237 / 0.03);
+}
+dialog.confirm {
+  margin: auto;
+  width: min(100% - 2rem, 28rem);
+  padding: 0;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-ink-2);
+  color: var(--color-bone);
+}
+dialog.confirm::backdrop {
+  background: rgb(0 0 0 / 0.7);
+}

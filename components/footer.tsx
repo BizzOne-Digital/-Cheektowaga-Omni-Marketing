@@ -1,8 +1,10 @@
 import Link from 'next/link'
-import { money, products } from '@/lib/products'
+import { getFeatured } from '@/lib/catalog'
+import { money } from '@/lib/products'
 import { legal, nav, site } from '@/lib/site'
 
-export function Footer() {
+export async function Footer() {
+  const product = await getFeatured()
   return (
     <footer className="relative mt-32 overflow-hidden border-t border-line bg-ink/80">
       <div className="wrap pt-24">
@@ -32,8 +34,8 @@ export function Footer() {
           </div>
           <div className="grid content-start gap-3 text-sm">
             <p className="eyebrow mb-2">Shop</p>
-            <Link className="ulink w-fit" href="/watches">{products[0].name}</Link>
-            <p className="text-ash">{money(products[0].priceCents)} USD · US customers only</p>
+            <Link className="ulink w-fit" href="/watches">{product.name}</Link>
+            <p className="text-ash">{money(product.priceCents)} USD · US customers only</p>
             <Link className="ulink w-fit text-ash hover:text-bone" href="/compare">Compare prices</Link>
           </div>
           <div className="grid content-start gap-3 text-sm">
