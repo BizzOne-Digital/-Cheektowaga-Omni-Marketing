@@ -179,14 +179,15 @@ export const healthNote =
 // Bay Alarm Medical SOS Smartwatch — $199 device + $39.95/mo monitoring, fall detection +$10/mo
 // (theseniorlist.com/medical-alert-systems/bay-alarm-medical/sos-smartwatch).
 // Re-check before each campaign; prices change. Cellular/SIM plans are excluded for every watch.
+// Rows with ourPrice: the VL16 Pro cell is filled from the live product price (priceCents), so it is left empty here.
 export const comparisonChecked = 'October 2026'
 export const comparison = {
   watches: ['VL16 Pro', 'Apple Watch SE 3 (GPS + Cellular)', 'Bay Alarm Medical SOS Smartwatch'],
   rows: [
-    { label: 'Watch price', values: ['$125', '$299', '$199'] },
+    { label: 'Watch price', values: ['', '$299', '$199'], ourPrice: true },
     { label: 'Monthly service fee', values: ['None', 'None', '$39.95 monitoring'] },
     { label: 'Fall alerts', values: ['Included', 'Included', '+$10 / month'] },
-    { label: 'First-year cost, with fall alerts', values: ['$125', '$299', '$798'], total: true },
+    { label: 'First-year cost, with fall alerts', values: ['', '$299', '$798'], total: true, ourPrice: true },
     { label: 'SOS button & GPS location', values: ['Yes', 'Yes', 'Yes'] },
     { label: 'Works without an iPhone', values: ['Yes', 'No, needs an iPhone to set up', 'Yes'] },
     { label: 'Who gets the alert', values: ['Family (up to 3 contacts)', 'Emergency services & contacts', '24/7 monitoring centre'] },

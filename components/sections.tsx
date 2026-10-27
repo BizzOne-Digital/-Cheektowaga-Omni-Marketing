@@ -39,8 +39,11 @@ const BURST = Array.from({ length: 48 }, (_, i) => {
 
 /* Price in an ember starburst (hero). */
 export function PriceBurst({ product }: { product: Product }) {
+  const price = money(product.priceCents)
+  // Shrink the price to fit the burst: Anton glyphs ≈ 0.5em wide, '.' and ',' ≈ 0.25em; "$125" (2em) keeps the full 39cqi.
+  const ems = [...price].reduce((w, c) => w + (/[.,]/.test(c) ? 0.25 : 0.5), 0)
   return (
-    <p className="relative grid size-40 shrink-0 -rotate-6 place-items-center sm:size-44" aria-label={`Only ${money(product.priceCents)} US dollars`}>
+    <p className="relative grid size-40 shrink-0 -rotate-6 place-items-center [container-type:inline-size] sm:size-44" aria-label={`Only ${price} US dollars`}>
       <svg viewBox="-100 -100 200 200" className="absolute inset-0 size-full drop-shadow-[0_18px_40px_rgb(224_109_52/0.45)] motion-safe:animate-[spin_60s_linear_infinite]" aria-hidden="true">
         <polygon points={BURST} fill="#E06D34" />
       </svg>
@@ -49,7 +52,7 @@ export function PriceBurst({ product }: { product: Product }) {
       </svg>
       <span className="relative grid justify-items-center text-ink" aria-hidden="true">
         <span className="-skew-x-6 bg-violet px-2 py-0.5 text-[0.625rem] font-extrabold uppercase italic tracking-[0.14em] text-white">Only</span>
-        <span className="font-price mt-1 text-[3.9rem] leading-[0.95] sm:text-[4.4rem]">{money(product.priceCents)}</span>
+        <span className="font-price mt-1 whitespace-nowrap leading-[0.95]" style={{ fontSize: `${Math.min(39, 78 / ems)}cqi` }}>{price}</span>
         <span className="text-[0.625rem] font-bold uppercase tracking-[0.28em]">USD</span>
       </span>
     </p>
@@ -386,10 +389,11 @@ export function ImageStory() {
 }
 
 /* ---------------- Price comparison ---------------- */
-const dollars = (v: string) => Number(v.replace(/[^\d.]/g, ''))
+const cents = (v: string) => Math.round(Number(v.replace(/[^\d.]/g, '')) * 100)
 
 export function PriceCompare({ product }: { product: Product }) {
-  const total = comparison.rows.find((r) => r.total)!.values.map(dollars)
+  const rows = comparison.rows.map((r) => (r.ourPrice ? { ...r, values: [money(product.priceCents), ...r.values.slice(1)] } : r))
+  const total = [product.priceCents, ...rows.find((r) => r.total)!.values.slice(1).map(cents)]
   return (
     <section className="wrap py-24 lg:py-32" aria-labelledby="compare-title">
       <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
@@ -424,7 +428,7 @@ export function PriceCompare({ product }: { product: Product }) {
             </tr>
           </thead>
           <tbody>
-            {comparison.rows.map((r) => (
+            {rows.map((r) => (
               <tr key={r.label} className={`border-b border-line last:border-b-0 ${r.total ? 'bg-ink-2/80' : ''}`}>
                 <th scope="row" className={`p-5 font-normal ${r.total ? 'font-semibold text-bone' : 'text-ash'}`}>{r.label}</th>
                 {r.values.map((v, i) => (
@@ -442,7 +446,7 @@ export function PriceCompare({ product }: { product: Product }) {
         <ul className="flex flex-wrap gap-x-8 gap-y-2 text-sm font-semibold">
           {comparison.watches.slice(1).map((w, i) => (
             <li key={w}>
-              Save <span className="font-price text-xl text-ember">{money((total[i + 1] - total[0]) * 100)}</span>{' '}
+              Save <span className="font-price text-xl text-ember">{money(total[i + 1] - total[0])}</span>{' '}
               <span className="font-normal text-ash">in year one vs {w}</span>
             </li>
           ))}
